@@ -53,7 +53,13 @@ export const useSubscription = () => {
         return;
       }
 
-      const finalSubscription: Subscription = subscription || {
+      const finalSubscription: Subscription = subscription ? {
+        id: subscription.id,
+        plan_type: subscription.plan_type as 'free' | 'starter' | 'pro' | 'fleet',
+        status: subscription.status as 'active' | 'cancelled' | 'expired' | 'pending',
+        payment_provider: subscription.payment_provider,
+        current_period_end: subscription.current_period_end,
+      } : {
         id: 'free',
         plan_type: 'free' as const,
         status: 'active' as const,

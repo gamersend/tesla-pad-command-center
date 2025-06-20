@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Mail, Search, Compose, Inbox, Star, Archive, Trash2 } from 'lucide-react';
+import { Mail, Search, Inbox, Star, Archive, Trash2, Edit } from 'lucide-react';
 
 const MailApp: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState('gmail');
@@ -119,7 +119,7 @@ const MailApp: React.FC = () => {
         {/* Compose Button */}
         <div className="p-4 border-t border-white/10">
           <button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center">
-            <Compose size={18} className="mr-2" />
+            <Edit size={18} className="mr-2" />
             Compose
           </button>
         </div>
