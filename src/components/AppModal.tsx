@@ -8,6 +8,10 @@ import NotesApp from './apps/NotesApp';
 import MapsApp from './apps/MapsApp';
 import TimerApp from './apps/TimerApp';
 import MusicApp from './apps/MusicApp';
+import SearchHubApp from './apps/SearchHubApp';
+import ColorPickerApp from './apps/ColorPickerApp';
+import DiceRollerApp from './apps/DiceRollerApp';
+import QuoteGeneratorApp from './apps/QuoteGeneratorApp';
 
 interface AppModalProps {
   appId: string;
@@ -31,6 +35,14 @@ export const AppModal: React.FC<AppModalProps> = ({ appId, onClose }) => {
         return <TimerApp />;
       case 'music':
         return <MusicApp />;
+      case 'search':
+        return <SearchHubApp />;
+      case 'color-picker':
+        return <ColorPickerApp />;
+      case 'dice':
+        return <DiceRollerApp />;
+      case 'quotes':
+        return <QuoteGeneratorApp />;
       default:
         return (
           <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-900 to-gray-800 text-white">

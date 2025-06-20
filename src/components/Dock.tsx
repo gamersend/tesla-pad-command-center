@@ -7,24 +7,26 @@ interface DockProps {
 
 const Dock: React.FC<DockProps> = ({ onOpenApp }) => {
   const dockApps = [
-    { id: 'tesla-control', icon: '🚗', name: 'Tesla' },
+    { id: 'tesla-control', icon: '🚗', name: 'Tesla Control' },
     { id: 'safari', icon: '🌐', name: 'Safari' },
-    { id: 'calendar', icon: '📅', name: 'Calendar' },
-    { id: 'weather', icon: '🌤️', name: 'Weather' },
-    { id: 'music', icon: '🎵', name: 'Music' }
+    { id: 'maps', icon: '🗺️', name: 'Maps' },
+    { id: 'music', icon: '🎵', name: 'Music' },
+    { id: 'search', icon: '🔍', name: 'Search' },
+    { id: 'notes', icon: '📝', name: 'Notes' },
   ];
 
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
-      <div className="bg-black/40 backdrop-blur-xl rounded-3xl px-4 py-3 border border-white/10">
+    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
+      <div className="bg-black/30 backdrop-blur-xl rounded-3xl p-4 border border-white/20 shadow-2xl">
         <div className="flex items-center space-x-4">
-          {dockApps.map((app, index) => (
+          {dockApps.map((app) => (
             <button
               key={app.id}
               onClick={() => onOpenApp(app.id)}
-              className="w-14 h-14 bg-gradient-to-br from-white/20 to-white/5 rounded-2xl flex items-center justify-center text-2xl hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20 hover:border-white/40"
+              className="w-14 h-14 rounded-2xl bg-white/10 hover:bg-white/20 transition-all duration-200 flex items-center justify-center text-2xl hover:scale-110 border border-white/10 hover:border-white/30"
+              title={app.name}
             >
-              <span className="filter drop-shadow-sm">{app.icon}</span>
+              {app.icon}
             </button>
           ))}
         </div>
