@@ -9,7 +9,162 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      pending_crypto_payments: {
+        Row: {
+          amount_crypto: number
+          amount_usd: number
+          created_at: string
+          currency: string
+          expires_at: string
+          id: string
+          payment_address: string
+          payment_id: string
+          payment_provider: string
+          plan_type: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_crypto: number
+          amount_usd: number
+          created_at?: string
+          currency: string
+          expires_at: string
+          id?: string
+          payment_address: string
+          payment_id: string
+          payment_provider?: string
+          plan_type: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_crypto?: number
+          amount_usd?: number
+          created_at?: string
+          currency?: string
+          expires_at?: string
+          id?: string
+          payment_address?: string
+          payment_id?: string
+          payment_provider?: string
+          plan_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          subscription_tier: string | null
+          tesla_api_token: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          subscription_tier?: string | null
+          tesla_api_token?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          subscription_tier?: string | null
+          tesla_api_token?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          external_subscription_id: string | null
+          id: string
+          payment_provider: string | null
+          plan_type: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          external_subscription_id?: string | null
+          id?: string
+          payment_provider?: string | null
+          plan_type: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          external_subscription_id?: string | null
+          id?: string
+          payment_provider?: string | null
+          plan_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      usage_metrics: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          last_reset: string
+          metric_name: string
+          metric_period: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          last_reset?: string
+          metric_name: string
+          metric_period: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          last_reset?: string
+          metric_name?: string
+          metric_period?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
