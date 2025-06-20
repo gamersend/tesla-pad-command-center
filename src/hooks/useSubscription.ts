@@ -53,7 +53,7 @@ export const useSubscription = () => {
         return;
       }
 
-      const finalSubscription = subscription || {
+      const finalSubscription: Subscription = subscription || {
         id: 'free',
         plan_type: 'free' as const,
         status: 'active' as const,
@@ -70,7 +70,7 @@ export const useSubscription = () => {
   };
 
   const setDefaultFreeSubscription = () => {
-    const freeSubscription = {
+    const freeSubscription: Subscription = {
       id: 'free',
       plan_type: 'free' as const,
       status: 'active' as const,

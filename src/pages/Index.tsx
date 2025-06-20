@@ -1,10 +1,21 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StatusBar } from '@/components/StatusBar';
-import { HomeScreen } from '@/components/HomeScreen';
-import { Dock } from '@/components/Dock';
+import HomeScreen from '@/components/HomeScreen';
+import Dock from '@/components/Dock';
+import { AppModal } from '@/components/AppModal';
 
 const Index = () => {
+  const [openApp, setOpenApp] = useState<string | null>(null);
+
+  const handleOpenApp = (appId: string) => {
+    setOpenApp(appId);
+  };
+
+  const handleCloseApp = () => {
+    setOpenApp(null);
+  };
+
   return (
     <div className="h-screen w-screen overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative">
       {/* Dynamic background with animated elements */}
@@ -20,11 +31,16 @@ const Index = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 relative z-10">
-        <HomeScreen />
+        <HomeScreen onOpenApp={handleOpenApp} />
       </div>
 
       {/* Dock */}
-      <Dock />
+      <Dock onOpenApp={handleOpenApp} />
+
+      {/* App Modal */}
+      {openApp && (
+        <AppModal appId={openApp} onClose={handleCloseApp} />
+      )}
     </div>
   );
 };
