@@ -20,6 +20,7 @@ import NewsFeedApp from './apps/NewsFeedApp';
 import SettingsApp from './apps/SettingsApp';
 import CameraApp from './apps/CameraApp';
 import HomeAssistantApp from './apps/HomeAssistantApp';
+import CryptoTrackerApp from './apps/CryptoTrackerApp';
 
 interface AppModalProps {
   appId: string;
@@ -64,6 +65,8 @@ export const AppModal: React.FC<AppModalProps> = ({ appId, onClose }) => {
         return <DiceRollerApp />;
       case 'quotes':
         return <QuoteGeneratorApp />;
+      case 'crypto':
+        return <CryptoTrackerApp />;
       
       // Advanced Feature Apps
       case 'news':

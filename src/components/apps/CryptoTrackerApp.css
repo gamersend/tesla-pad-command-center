@@ -1,0 +1,469 @@
+
+.crypto-tracker-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--color-system-background);
+}
+
+.crypto-header {
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+  color: white;
+  padding: 24px 20px;
+  border-radius: 0 0 24px 24px;
+}
+
+.crypto-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.market-summary {
+  display: flex;
+  gap: 24px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.market-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-label {
+  font-size: 11px;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-weight: 600;
+}
+
+.crypto-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.crypto-sidebar {
+  width: 280px;
+  background: var(--color-secondary-system-background);
+  border-right: 1px solid var(--color-quaternary-label);
+  overflow-y: auto;
+}
+
+.sidebar-section {
+  padding: 20px;
+  border-bottom: 1px solid var(--color-quaternary-label);
+}
+
+.sidebar-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--color-label);
+}
+
+.portfolio-summary {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.portfolio-value {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.portfolio-change {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.portfolio-change.positive {
+  color: var(--color-green);
+}
+
+.portfolio-change.negative {
+  color: var(--color-red);
+}
+
+.change-arrow {
+  font-size: 12px;
+}
+
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--color-blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.action-btn:hover {
+  background: var(--color-blue-dark);
+}
+
+.action-btn.secondary {
+  background: var(--color-secondary-system-background);
+  color: var(--color-label);
+}
+
+.crypto-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.main-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--color-quaternary-label);
+  padding-bottom: 16px;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  background: transparent;
+  color: var(--color-secondary-label);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+  background: var(--color-blue);
+  color: white;
+}
+
+.prices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.coin-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.coin-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.coin-card.tesla-coin::before {
+  content: '⚡';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 16px;
+}
+
+.coin-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.coin-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.coin-info {
+  flex: 1;
+}
+
+.coin-name {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.coin-symbol {
+  font-size: 12px;
+  color: var(--color-secondary-label);
+  text-transform: uppercase;
+}
+
+.coin-price {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.coin-change {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.coin-change.positive {
+  color: var(--color-green);
+}
+
+.coin-change.negative {
+  color: var(--color-red);
+}
+
+.coin-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-quaternary-label);
+}
+
+.coin-stat {
+  text-align: center;
+}
+
+.portfolio-holdings {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.holdings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.holdings-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.holdings-table th {
+  text-align: left;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-quaternary-label);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-secondary-label);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.holdings-table td {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-quaternary-label);
+}
+
+.holding-coin {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.holding-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 10px;
+}
+
+.holding-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.holding-name {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.holding-amount {
+  font-size: 12px;
+  color: var(--color-secondary-label);
+}
+
+.holding-value {
+  font-weight: 600;
+}
+
+.holding-change {
+  font-weight: 600;
+  text-align: right;
+}
+
+.holding-change.positive {
+  color: var(--color-green);
+}
+
+.holding-change.negative {
+  color: var(--color-red);
+}
+
+/* Tesla Payment Modal */
+.tesla-payment-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.payment-content {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.payment-header {
+  margin-bottom: 24px;
+}
+
+.tesla-logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: #E31937;
+  margin-bottom: 8px;
+}
+
+.payment-details {
+  background: var(--color-secondary-system-background);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.payment-amount {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.payment-conversion {
+  font-size: 14px;
+  color: var(--color-secondary-label);
+}
+
+.payment-address {
+  background: white;
+  border: 1px solid var(--color-quaternary-label);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 16px 0;
+  font-family: monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.qr-code {
+  margin: 20px 0;
+}
+
+.qr-code img {
+  border-radius: 8px;
+}
+
+.payment-timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: var(--color-orange);
+  font-weight: 600;
+}
+
+.payment-status {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.payment-status.pending {
+  background: rgba(255, 149, 0, 0.1);
+  color: var(--color-orange);
+}
+
+.payment-status.confirmed {
+  background: rgba(52, 199, 89, 0.1);
+  color: var(--color-green);
+}
+
+.energy-comparison {
+  background: var(--color-secondary-system-background);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 20px;
+  text-align: left;
+}
+
+.comparison-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comparison-text {
+  font-size: 14px;
+  color: var(--color-secondary-label);
+  line-height: 1.4;
+}
