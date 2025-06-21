@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { X } from 'lucide-react';
 import SafariApp from './apps/SafariApp';
@@ -22,13 +21,15 @@ import CameraApp from './apps/CameraApp';
 import HomeAssistantApp from './apps/HomeAssistantApp';
 import CryptoTrackerApp from './apps/CryptoTrackerApp';
 import AIAssistantApp from './apps/AIAssistantApp';
+import JSONToolsApp from './apps/JSONToolsApp';
+import StatsPanelApp from './apps/StatsPanelApp';
 
 interface AppModalProps {
   appId: string;
   onClose: () => void;
 }
 
-export const AppModal: React.FC<AppModalProps> = ({ appId, onClose }) => {
+const AppModal: React.FC<AppModalProps> = ({ appId, onClose }) => {
   const renderApp = () => {
     switch (appId) {
       // Tesla Apps
@@ -81,13 +82,17 @@ export const AppModal: React.FC<AppModalProps> = ({ appId, onClose }) => {
       case 'ai-assistant':
         return <AIAssistantApp />;
       
+      case 'json-tools':
+        return <JSONToolsApp />;
+      case 'stats-panel':
+        return <StatsPanelApp />;
+      
       default:
         return (
-          <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-            <div className="text-center">
-              <div className="text-6xl mb-4">🚧</div>
-              <h2 className="text-2xl font-bold mb-2">Coming Soon</h2>
-              <p className="text-gray-400">This app is under development</p>
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center text-white">
+              <h2 className="text-2xl font-bold mb-4">App Not Found</h2>
+              <p>The app "{appId}" is not available.</p>
             </div>
           </div>
         );
@@ -113,3 +118,5 @@ export const AppModal: React.FC<AppModalProps> = ({ appId, onClose }) => {
     </div>
   );
 };
+
+export default AppModal;

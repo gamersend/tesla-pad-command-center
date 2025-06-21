@@ -475,7 +475,7 @@ class TeslaAPIManager {
           resolve({
             success: false,
             error: error.message,
-            timestamp: Date.now()
+            executedAt: Date.now()
           });
         }
       }, 5000); // Wait 5 seconds before retry

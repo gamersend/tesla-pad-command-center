@@ -1,7 +1,6 @@
-
 import React, { useEffect } from 'react';
 import { Wifi, Bluetooth, Sun, Volume2, AirplayIcon, Settings } from 'lucide-react';
-import { useSettings } from '@/hooks/useSettings';
+import { useSettingsContext } from '@/contexts/SettingsContext';
 
 interface ControlCenterProps {
   isOpen: boolean;
@@ -9,7 +8,7 @@ interface ControlCenterProps {
 }
 
 export const ControlCenter: React.FC<ControlCenterProps> = ({ isOpen, onClose }) => {
-  const { settings, updateSetting } = useSettings();
+  const { settings, saveSettings } = useSettingsContext();
 
   useEffect(() => {
     if (isOpen) {
