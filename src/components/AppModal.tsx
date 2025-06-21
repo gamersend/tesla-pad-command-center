@@ -16,6 +16,8 @@ import TeslaControlApp from './apps/TeslaControlApp';
 import TeslaStatusApp from './apps/TeslaStatusApp';
 import ChargingHubApp from './apps/ChargingHubApp';
 import ClimateProApp from './apps/ClimateProApp';
+import NewsFeedApp from './apps/NewsFeedApp';
+import SettingsApp from './apps/SettingsApp';
 
 interface AppModalProps {
   appId: string;
@@ -60,6 +62,12 @@ export const AppModal: React.FC<AppModalProps> = ({ appId, onClose }) => {
         return <DiceRollerApp />;
       case 'quotes':
         return <QuoteGeneratorApp />;
+      
+      // Advanced Feature Apps
+      case 'news':
+        return <NewsFeedApp />;
+      case 'settings':
+        return <SettingsApp />;
       
       default:
         return (
