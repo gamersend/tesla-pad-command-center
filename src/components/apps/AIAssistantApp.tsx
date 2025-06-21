@@ -6,6 +6,7 @@ import { useAIAssistant } from '@/hooks/useAIAssistant';
 const AIAssistantApp: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [showSettings, setShowSettings] = useState(false);
+  const [speechRecognitionAvailable, setSpeechRecognitionAvailable] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   
@@ -32,6 +33,11 @@ const AIAssistantApp: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    // Check if speech recognition is available
+    setSpeechRecognitionAvailable('webkitSpeechRecognition' in window);
+  }, []);
 
   const handleSendMessage = () => {
     if (inputMessage.trim()) {
@@ -192,13 +198,15 @@ const AIAssistantApp: React.FC = () => {
           />
           
           <div className="input-actions">
-            <button
-              onClick={isListening ? stopVoiceInput : startVoiceInput}
-              className={`voice-button ${isListening ? 'listening' : ''}`}
-              title={isListening ? 'Stop listening' : 'Start voice input'}
-            >
-              {isListening ? <MicOff size={20} /> : <Mic size={20} />}
-            </button>
+            {speechRecognitionAvailable && (
+              <button
+                onClick={isListening ? stopVoiceInput : startVoiceInput}
+                className={`voice-button ${isListening ? 'listening' : ''}`}
+                title={isListening ? 'Stop listening' : 'Start voice input'}
+              >
+                {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+              </button>
+            )}
             
             <button
               onClick={handleSendMessage}
@@ -225,7 +233,7 @@ const AIAssistantApp: React.FC = () => {
             
             <div className="flex items-center justify-between">
               <span className="text-sm">Voice Recognition</span>
-              <div className={`w-3 h-3 rounded-full ${recognition ? 'bg-green-500' : 'bg-red-500'}`} />
+              <div className={`w-3 h-3 rounded-full ${speechRecognitionAvailable ? 'bg-green-500' : 'bg-red-500'}`} />
             </div>
             
             <div className="text-xs text-gray-600 mt-4">

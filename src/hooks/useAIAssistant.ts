@@ -362,10 +362,10 @@ Please provide a helpful response considering the Tesla vehicle context. For veh
 }
 
 class AIResponseCache {
-  private cache = new Map();
+  private cache = new Map<string, { response: string; timestamp: number }>();
   private maxCacheSize = 50;
   private cacheTimeout = 300000; // 5 minutes
-  private commonResponses = new Map([
+  private commonResponses = new Map<string, string>([
     ['what is my battery level', "I'll check your current battery level for you."],
     ['lock the car', 'Locking your Tesla now.'],
     ['unlock the car', 'Unlocking your Tesla now.'],
@@ -373,15 +373,16 @@ class AIResponseCache {
     ['stop climate', 'Stopping climate control.'],
     ['how far can I drive', 'Let me check your current range.'],
     ['where am I', "I'll get your current location."],
-    ['what time is it', () => `It's currently ${new Date().toLocaleTimeString()}.`],
+    ['what time is it', `It's currently ${new Date().toLocaleTimeString()}.`],
     ['hello', 'Hello! How can I help you with your Tesla today?'],
     ['thank you', "You're welcome! Is there anything else I can help you with?"]
   ]);
 
   getCachedResponse(query: string, context: any) {
+    // Check common responses first
     const commonResponse = this.commonResponses.get(query.toLowerCase().trim());
     if (commonResponse) {
-      return typeof commonResponse === 'function' ? commonResponse() : commonResponse;
+      return commonResponse;
     }
     
     const cacheKey = this.generateCacheKey(query, context);
