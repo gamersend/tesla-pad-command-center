@@ -18,6 +18,7 @@ import ChargingHubApp from './apps/ChargingHubApp';
 import ClimateProApp from './apps/ClimateProApp';
 import NewsFeedApp from './apps/NewsFeedApp';
 import SettingsApp from './apps/SettingsApp';
+import CameraApp from './apps/CameraApp';
 
 interface AppModalProps {
   appId: string;
@@ -68,6 +69,8 @@ export const AppModal: React.FC<AppModalProps> = ({ appId, onClose }) => {
         return <NewsFeedApp />;
       case 'settings':
         return <SettingsApp />;
+      case 'camera':
+        return <CameraApp />;
       
       default:
         return (
