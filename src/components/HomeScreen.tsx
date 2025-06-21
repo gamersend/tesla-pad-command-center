@@ -1,3 +1,4 @@
+
 import React from 'react';
 import AppIcon from './AppIcon';
 
@@ -8,26 +9,26 @@ interface HomeScreenProps {
 const HomeScreen: React.FC<HomeScreenProps> = ({ onOpenApp }) => {
   const apps = [
     // Tesla Control Center
-    { id: 'tesla-control', name: 'Tesla Control', icon: '🚗', category: 'tesla' },
-    { id: 'tesla-status', name: 'Tesla Status', icon: '📊', category: 'tesla' },
-    { id: 'charging', name: 'Charging Hub', icon: '⚡', category: 'tesla' },
-    { id: 'climate', name: 'Climate Pro', icon: '🌡️', category: 'tesla' },
+    { id: 'tesla-control', name: 'Tesla Control', icon: '🚗', gradient: 'from-red-500 to-red-700', category: 'tesla' },
+    { id: 'tesla-status', name: 'Tesla Status', icon: '📊', gradient: 'from-red-500 to-red-700', category: 'tesla' },
+    { id: 'charging', name: 'Charging Hub', icon: '⚡', gradient: 'from-yellow-500 to-orange-600', category: 'tesla' },
+    { id: 'climate', name: 'Climate Pro', icon: '🌡️', gradient: 'from-blue-500 to-cyan-600', category: 'tesla' },
     
     // Productivity Suite
-    { id: 'safari', name: 'Safari', icon: '🌐', category: 'productivity' },
-    { id: 'calendar', name: 'Calendar', icon: '📅', category: 'productivity' },
-    { id: 'mail', name: 'Mail', icon: '✉️', category: 'productivity' },
-    { id: 'notes', name: 'Notes', icon: '📝', category: 'productivity' },
-    { id: 'weather', name: 'Weather', icon: '🌤️', category: 'productivity' },
-    { id: 'maps', name: 'Maps', icon: '🗺️', category: 'productivity' },
-    { id: 'timer', name: 'Timer', icon: '⏰', category: 'productivity' },
-    { id: 'music', name: 'Music', icon: '🎵', category: 'productivity' },
+    { id: 'safari', name: 'Safari', icon: '🌐', gradient: 'from-blue-500 to-blue-700', category: 'productivity' },
+    { id: 'calendar', name: 'Calendar', icon: '📅', gradient: 'from-green-500 to-green-700', category: 'productivity' },
+    { id: 'mail', name: 'Mail', icon: '✉️', gradient: 'from-blue-500 to-blue-700', category: 'productivity' },
+    { id: 'notes', name: 'Notes', icon: '📝', gradient: 'from-yellow-500 to-orange-600', category: 'productivity' },
+    { id: 'weather', name: 'Weather', icon: '🌤️', gradient: 'from-blue-500 to-cyan-600', category: 'productivity' },
+    { id: 'maps', name: 'Maps', icon: '🗺️', gradient: 'from-green-500 to-green-700', category: 'productivity' },
+    { id: 'timer', name: 'Timer', icon: '⏰', gradient: 'from-orange-500 to-red-600', category: 'productivity' },
+    { id: 'music', name: 'Music', icon: '🎵', gradient: 'from-purple-500 to-pink-600', category: 'productivity' },
 
     // Utility Apps
-    { id: 'search', name: 'Search Hub', icon: '🔍', category: 'utility' },
-    { id: 'color-picker', name: 'Color Picker', icon: '🎨', category: 'utility' },
-    { id: 'dice', name: 'Dice Roller', icon: '🎲', category: 'utility' },
-    { id: 'quotes', name: 'Quote Generator', icon: '💭', category: 'utility' },
+    { id: 'search', name: 'Search Hub', icon: '🔍', gradient: 'from-purple-500 to-purple-700', category: 'utility' },
+    { id: 'color-picker', name: 'Color Picker', icon: '🎨', gradient: 'from-pink-500 to-purple-600', category: 'utility' },
+    { id: 'dice', name: 'Dice Roller', icon: '🎲', gradient: 'from-indigo-500 to-purple-600', category: 'utility' },
+    { id: 'quotes', name: 'Quote Generator', icon: '💭', gradient: 'from-orange-500 to-yellow-600', category: 'utility' },
   ];
 
   const groupedApps = apps.reduce((acc, app) => {
@@ -74,8 +75,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onOpenApp }) => {
               {categoryApps.map((app) => (
                 <AppIcon
                   key={app.id}
-                  name={app.name}
-                  icon={app.icon}
+                  app={app}
                   onClick={() => onOpenApp(app.id)}
                 />
               ))}
