@@ -22,7 +22,7 @@ export const StatusBar = () => {
 
     // Check if Tesla is charging
     if ('getBattery' in navigator) {
-      navigator.getBattery().then(battery => {
+      (navigator as any).getBattery().then((battery: any) => {
         setIsCharging(battery.charging);
         setBatteryLevel(Math.round(battery.level * 100));
       });

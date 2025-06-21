@@ -1,48 +1,85 @@
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Palette, Copy, Save, Trash2, Eye, Shuffle } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Palette, Copy, Save, Download, Shuffle } from 'lucide-react';
+
+interface Color {
+  r: number;
+  g: number;
+  b: number;
+}
 
 const ColorPickerApp: React.FC = () => {
-  const [currentColor, setCurrentColor] = useState({ r: 255, g: 100, b: 100 });
-  const [hue, setHue] = useState(0);
-  const [saturation, setSaturation] = useState(100);
-  const [lightness, setLightness] = useState(50);
-  const [colorHistory, setColorHistory] = useState<Array<{r: number, g: number, b: number}>>([]);
-  const [savedPalettes, setSavedPalettes] = useState<Array<{name: string, colors: Array<{r: number, g: number, b: number}>}>>([]);
-  const [selectedFormat, setSelectedFormat] = useState<'hex' | 'rgb' | 'hsl'>('hex');
+  const [currentColor, setCurrentColor] = useState<Color>({ r: 255, g: 100, b: 100 });
+  const [colorHistory, setColorHistory] = useState<Color[]>([]);
+  const [selectedPalette, setSelectedPalette] = useState('tesla_official');
+  const [savedColors, setSavedColors] = useState<Color[]>([]);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const teslaColors = {
-    official: [
-      { name: 'Tesla Red', r: 227, g: 25, b: 55 },
-      { name: 'Tesla Blue', r: 27, g: 54, b: 94 },
-      { name: 'Pearl White', r: 247, g: 247, b: 247 },
-      { name: 'Solid Black', r: 0, g: 0, b: 0 },
-      { name: 'Midnight Silver', r: 92, g: 94, b: 98 },
-      { name: 'Deep Blue', r: 30, g: 58, b: 95 }
-    ],
-    dashboard: [
-      { name: 'Night Mode', r: 0, g: 0, b: 0 },
-      { name: 'Dark Gray', r: 28, g: 28, b: 30 },
-      { name: 'Accent Blue', r: 0, g: 122, b: 255 },
-      { name: 'Success Green', r: 52, g: 199, b: 89 },
-      { name: 'Warning Orange', r: 255, g: 149, b: 0 },
-      { name: 'Error Red', r: 255, g: 59, b: 48 }
-    ]
+  const teslaColorPalettes = {
+    tesla_official: {
+      name: 'Tesla Official Colors',
+      colors: [
+        { name: 'Tesla Red', hex: '#E31937', r: 227, g: 25, b: 55 },
+        { name: 'Tesla Blue', hex: '#1B365E', r: 27, g: 54, b: 94 },
+        { name: 'Pearl White', hex: '#F7F7F7', r: 247, g: 247, b: 247 },
+        { name: 'Solid Black', hex: '#000000', r: 0, g: 0, b: 0 },
+        { name: 'Midnight Silver', hex: '#5C5E62', r: 92, g: 94, b: 98 }
+      ]
+    },
+    dashboard_themes: {
+      name: 'Dashboard Themes',
+      colors: [
+        { name: 'Night Mode', hex: '#000000', r: 0, g: 0, b: 0 },
+        { name: 'Dark Gray', hex: '#1C1C1E', r: 28, g: 28, b: 30 },
+        { name: 'Tesla Interior', hex: '#2C2C2E', r: 44, g: 44, b: 46 },
+        { name: 'Accent Blue', hex: '#007AFF', r: 0, g: 122, b: 255 },
+        { name: 'Success Green', hex: '#34C759', r: 52, g: 199, b: 89 }
+      ]
+    }
   };
 
-  // Color conversion functions
-  const rgbToHex = (r: number, g: number, b: number) => {
-    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+  useEffect(() => {
+    drawColorWheel();
+  }, []);
+
+  const drawColorWheel = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(centerX, centerY) - 10;
+
+    // Draw color wheel
+    for (let angle = 0; angle < 360; angle += 1) {
+      const startAngle = (angle - 1) * Math.PI / 180;
+      const endAngle = angle * Math.PI / 180;
+      
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = `hsl(${angle}, 100%, 50%)`;
+      ctx.stroke();
+    }
   };
 
-  const rgbToHsl = (r: number, g: number, b: number) => {
-    r /= 255;
-    g /= 255;
-    b /= 255;
-    
+  const rgbToHex = (color: Color): string => {
+    return `#${color.r.toString(16).padStart(2, '0')}${color.g.toString(16).padStart(2, '0')}${color.b.toString(16).padStart(2, '0')}`.toUpperCase();
+  };
+
+  const rgbToHsl = (color: Color): { h: number; s: number; l: number } => {
+    const r = color.r / 255;
+    const g = color.g / 255;
+    const b = color.b / 255;
+
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
-    let h = 0, s = 0, l = (max + min) / 2;
+    let h = 0;
+    let s = 0;
+    const l = (max + min) / 2;
 
     if (max !== min) {
       const d = max - min;
@@ -56,17 +93,42 @@ const ColorPickerApp: React.FC = () => {
       h /= 6;
     }
 
-    return {
-      h: Math.round(h * 360),
-      s: Math.round(s * 100),
-      l: Math.round(l * 100)
-    };
+    return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
   };
 
-  const hslToRgb = (h: number, s: number, l: number) => {
-    h /= 360;
-    s /= 100;
-    l /= 100;
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    // Show toast notification here
+  };
+
+  const generateHarmony = (type: string): Color[] => {
+    const hsl = rgbToHsl(currentColor);
+    const harmonies: Color[] = [];
+
+    switch (type) {
+      case 'complementary':
+        harmonies.push(currentColor);
+        harmonies.push(hslToRgb({ h: (hsl.h + 180) % 360, s: hsl.s, l: hsl.l }));
+        break;
+      case 'triadic':
+        harmonies.push(currentColor);
+        harmonies.push(hslToRgb({ h: (hsl.h + 120) % 360, s: hsl.s, l: hsl.l }));
+        harmonies.push(hslToRgb({ h: (hsl.h + 240) % 360, s: hsl.s, l: hsl.l }));
+        break;
+      case 'analogous':
+        harmonies.push(hslToRgb({ h: (hsl.h - 30 + 360) % 360, s: hsl.s, l: hsl.l }));
+        harmonies.push(currentColor);
+        harmonies.push(hslToRgb({ h: (hsl.h + 30) % 360, s: hsl.s, l: hsl.l }));
+        break;
+    }
+
+    return harmonies;
+  };
+
+  const hslToRgb = (hsl: { h: number; s: number; l: number }): Color => {
+    const h = hsl.h / 360;
+    const s = hsl.s / 100;
+    const l = hsl.l / 100;
 
     const hue2rgb = (p: number, q: number, t: number) => {
       if (t < 0) t += 1;
@@ -96,306 +158,195 @@ const ColorPickerApp: React.FC = () => {
     };
   };
 
-  const updateColorFromHSL = useCallback(() => {
-    const rgb = hslToRgb(hue, saturation, lightness);
-    setCurrentColor(rgb);
-  }, [hue, saturation, lightness]);
-
-  useEffect(() => {
-    updateColorFromHSL();
-  }, [updateColorFromHSL]);
-
-  const addToHistory = (color: {r: number, g: number, b: number}) => {
-    setColorHistory(prev => {
-      const filtered = prev.filter(c => !(c.r === color.r && c.g === color.g && c.b === color.b));
-      return [color, ...filtered].slice(0, 20);
-    });
-  };
-
-  const copyColorValue = () => {
-    let value = '';
-    switch (selectedFormat) {
-      case 'hex':
-        value = rgbToHex(currentColor.r, currentColor.g, currentColor.b);
-        break;
-      case 'rgb':
-        value = `rgb(${currentColor.r}, ${currentColor.g}, ${currentColor.b})`;
-        break;
-      case 'hsl':
-        const hsl = rgbToHsl(currentColor.r, currentColor.g, currentColor.b);
-        value = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
-        break;
+  const saveColor = () => {
+    if (!savedColors.find(c => c.r === currentColor.r && c.g === currentColor.g && c.b === currentColor.b)) {
+      setSavedColors(prev => [...prev, currentColor]);
     }
-    navigator.clipboard.writeText(value);
   };
 
-  const generateRandomColor = () => {
-    const newColor = {
-      r: Math.floor(Math.random() * 256),
-      g: Math.floor(Math.random() * 256),
-      b: Math.floor(Math.random() * 256)
-    };
-    setCurrentColor(newColor);
-    const hsl = rgbToHsl(newColor.r, newColor.g, newColor.b);
-    setHue(hsl.h);
-    setSaturation(hsl.s);
-    setLightness(hsl.l);
-    addToHistory(newColor);
-  };
-
-  const generateHarmony = (type: 'complementary' | 'triadic' | 'analogous') => {
-    const baseHsl = rgbToHsl(currentColor.r, currentColor.g, currentColor.b);
-    let colors = [currentColor];
-
-    switch (type) {
-      case 'complementary':
-        const compHue = (baseHsl.h + 180) % 360;
-        colors.push(hslToRgb(compHue, baseHsl.s, baseHsl.l));
-        break;
-      case 'triadic':
-        colors.push(hslToRgb((baseHsl.h + 120) % 360, baseHsl.s, baseHsl.l));
-        colors.push(hslToRgb((baseHsl.h + 240) % 360, baseHsl.s, baseHsl.l));
-        break;
-      case 'analogous':
-        colors.unshift(hslToRgb((baseHsl.h - 30 + 360) % 360, baseHsl.s, baseHsl.l));
-        colors.push(hslToRgb((baseHsl.h + 30) % 360, baseHsl.s, baseHsl.l));
-        break;
-    }
-
-    return colors;
-  };
+  const hsl = rgbToHsl(currentColor);
 
   return (
-    <div className="h-full bg-gradient-to-br from-purple-900 via-pink-900 to-indigo-900 text-white flex">
-      {/* Main Color Picker */}
-      <div className="flex-1 p-6 overflow-y-auto">
-        <h1 className="text-3xl font-bold mb-6 flex items-center">
+    <div className="h-full bg-gradient-to-br from-pink-500 to-purple-600 text-white overflow-hidden">
+      {/* Header */}
+      <div className="p-6 text-center border-b border-white/20">
+        <h1 className="text-3xl font-bold mb-2 flex items-center justify-center">
           <Palette className="mr-3" size={32} />
           Color Picker Pro
         </h1>
+        <p className="text-white/80">Professional color selection for Tesla</p>
+      </div>
 
-        {/* Current Color Display */}
-        <div className="bg-white/10 rounded-3xl p-6 mb-6 backdrop-blur-sm border border-white/20">
-          <div className="flex items-center gap-6 mb-6">
-            <div 
-              className="w-24 h-24 rounded-2xl border-4 border-white/30 shadow-lg"
-              style={{ backgroundColor: `rgb(${currentColor.r}, ${currentColor.g}, ${currentColor.b})` }}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Main Color Picker */}
+        <div className="flex-1 p-6 flex flex-col items-center">
+          {/* Color Wheel */}
+          <div className="relative mb-6">
+            <canvas
+              ref={canvasRef}
+              width={250}
+              height={250}
+              className="rounded-full cursor-crosshair"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left - 125;
+                const y = e.clientY - rect.top - 125;
+                const angle = Math.atan2(y, x) * 180 / Math.PI + 180;
+                const distance = Math.sqrt(x * x + y * y);
+                
+                if (distance <= 125) {
+                  const newColor = hslToRgb({ h: angle, s: 100, l: 50 });
+                  setCurrentColor(newColor);
+                  setColorHistory(prev => [newColor, ...prev.slice(0, 9)]);
+                }
+              }}
             />
-            <div className="flex-1">
-              <div className="grid grid-cols-3 gap-4">
-                <button
-                  onClick={() => setSelectedFormat('hex')}
-                  className={`p-3 rounded-xl transition-colors ${selectedFormat === 'hex' ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'}`}
-                >
-                  <div className="text-sm opacity-70">HEX</div>
-                  <div className="font-mono font-bold">
-                    {rgbToHex(currentColor.r, currentColor.g, currentColor.b)}
-                  </div>
-                </button>
-                <button
-                  onClick={() => setSelectedFormat('rgb')}
-                  className={`p-3 rounded-xl transition-colors ${selectedFormat === 'rgb' ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'}`}
-                >
-                  <div className="text-sm opacity-70">RGB</div>
-                  <div className="font-mono font-bold text-sm">
-                    {currentColor.r}, {currentColor.g}, {currentColor.b}
-                  </div>
-                </button>
-                <button
-                  onClick={() => setSelectedFormat('hsl')}
-                  className={`p-3 rounded-xl transition-colors ${selectedFormat === 'hsl' ? 'bg-white/30' : 'bg-white/10 hover:bg-white/20'}`}
-                >
-                  <div className="text-sm opacity-70">HSL</div>
-                  <div className="font-mono font-bold text-sm">
-                    {rgbToHsl(currentColor.r, currentColor.g, currentColor.b).h}°, {rgbToHsl(currentColor.r, currentColor.g, currentColor.b).s}%, {rgbToHsl(currentColor.r, currentColor.g, currentColor.b).l}%
-                  </div>
-                </button>
+          </div>
+
+          {/* Current Color Display */}
+          <div 
+            className="w-32 h-32 rounded-2xl border-4 border-white/30 shadow-lg mb-6"
+            style={{ backgroundColor: `rgb(${currentColor.r}, ${currentColor.g}, ${currentColor.b})` }}
+          />
+
+          {/* Color Values */}
+          <div className="grid grid-cols-3 gap-4 w-full max-w-md">
+            <div className="bg-white/10 rounded-lg p-3">
+              <div className="text-xs font-medium mb-1">HEX</div>
+              <div 
+                className="font-mono text-sm cursor-pointer hover:bg-white/10 p-1 rounded"
+                onClick={() => copyToClipboard(rgbToHex(currentColor))}
+              >
+                {rgbToHex(currentColor)}
+              </div>
+            </div>
+            <div className="bg-white/10 rounded-lg p-3">
+              <div className="text-xs font-medium mb-1">RGB</div>
+              <div 
+                className="font-mono text-sm cursor-pointer hover:bg-white/10 p-1 rounded"
+                onClick={() => copyToClipboard(`rgb(${currentColor.r}, ${currentColor.g}, ${currentColor.b})`)}
+              >
+                {currentColor.r}, {currentColor.g}, {currentColor.b}
+              </div>
+            </div>
+            <div className="bg-white/10 rounded-lg p-3">
+              <div className="text-xs font-medium mb-1">HSL</div>
+              <div 
+                className="font-mono text-sm cursor-pointer hover:bg-white/10 p-1 rounded"
+                onClick={() => copyToClipboard(`hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`)}
+              >
+                {hsl.h}, {hsl.s}%, {hsl.l}%
               </div>
             </div>
           </div>
 
-          <div className="flex gap-3">
+          {/* Action Buttons */}
+          <div className="flex gap-3 mt-6">
             <button
-              onClick={copyColorValue}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500/30 rounded-xl hover:bg-blue-500/50 transition-colors"
-            >
-              <Copy size={16} />
-              Copy
-            </button>
-            <button
-              onClick={() => addToHistory(currentColor)}
-              className="flex items-center gap-2 px-4 py-2 bg-green-500/30 rounded-xl hover:bg-green-500/50 transition-colors"
+              onClick={saveColor}
+              className="flex items-center gap-2 px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
             >
               <Save size={16} />
               Save
             </button>
             <button
-              onClick={generateRandomColor}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-500/30 rounded-xl hover:bg-purple-500/50 transition-colors"
+              onClick={() => copyToClipboard(rgbToHex(currentColor))}
+              className="flex items-center gap-2 px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
             >
-              <Shuffle size={16} />
-              Random
+              <Copy size={16} />
+              Copy
             </button>
           </div>
         </div>
 
-        {/* HSL Sliders */}
-        <div className="bg-white/10 rounded-3xl p-6 mb-6 backdrop-blur-sm border border-white/20">
-          <h3 className="text-xl font-semibold mb-4">Color Controls</h3>
-          
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Hue: {hue}°</label>
-              <input
-                type="range"
-                min="0"
-                max="360"
-                value={hue}
-                onChange={(e) => setHue(parseInt(e.target.value))}
-                className="w-full h-3 rounded-full appearance-none cursor-pointer"
-                style={{
-                  background: 'linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)'
-                }}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Saturation: {saturation}%</label>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={saturation}
-                onChange={(e) => setSaturation(parseInt(e.target.value))}
-                className="w-full h-3 rounded-full appearance-none cursor-pointer"
-                style={{
-                  background: `linear-gradient(to right, hsl(${hue}, 0%, ${lightness}%), hsl(${hue}, 100%, ${lightness}%))`
-                }}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Lightness: {lightness}%</label>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={lightness}
-                onChange={(e) => setLightness(parseInt(e.target.value))}
-                className="w-full h-3 rounded-full appearance-none cursor-pointer"
-                style={{
-                  background: `linear-gradient(to right, hsl(${hue}, ${saturation}%, 0%), hsl(${hue}, ${saturation}%, 50%), hsl(${hue}, ${saturation}%, 100%))`
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Color Harmonies */}
-        <div className="bg-white/10 rounded-3xl p-6 backdrop-blur-sm border border-white/20">
-          <h3 className="text-xl font-semibold mb-4">Color Harmonies</h3>
-          
-          <div className="space-y-4">
-            {['complementary', 'triadic', 'analogous'].map((harmonyType) => (
-              <div key={harmonyType} className="flex items-center gap-4">
-                <span className="w-24 text-sm font-medium capitalize">{harmonyType}</span>
-                <div className="flex gap-2">
-                  {generateHarmony(harmonyType as any).map((color, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        setCurrentColor(color);
-                        const hsl = rgbToHsl(color.r, color.g, color.b);
-                        setHue(hsl.h);
-                        setSaturation(hsl.s);
-                        setLightness(hsl.l);
-                      }}
-                      className="w-12 h-12 rounded-lg border-2 border-white/30 hover:border-white/60 transition-colors"
-                      style={{ backgroundColor: `rgb(${color.r}, ${color.g}, ${color.b})` }}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Sidebar */}
-      <div className="w-80 bg-black/30 border-l border-white/10 p-6 overflow-y-auto">
-        {/* Tesla Color Palettes */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-4">Tesla Colors</h3>
-          
-          <div className="space-y-4">
-            <div>
-              <h4 className="text-sm font-medium mb-3 text-white/70">Official Colors</h4>
-              <div className="grid grid-cols-3 gap-2">
-                {teslaColors.official.map((color, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setCurrentColor(color);
-                      const hsl = rgbToHsl(color.r, color.g, color.b);
-                      setHue(hsl.h);
-                      setSaturation(hsl.s);
-                      setLightness(hsl.l);
-                      addToHistory(color);
-                    }}
-                    className="w-full h-12 rounded-lg border-2 border-white/20 hover:border-white/50 transition-colors"
-                    style={{ backgroundColor: `rgb(${color.r}, ${color.g}, ${color.b})` }}
-                    title={color.name}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-medium mb-3 text-white/70">Dashboard Themes</h4>
-              <div className="grid grid-cols-3 gap-2">
-                {teslaColors.dashboard.map((color, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setCurrentColor(color);
-                      const hsl = rgbToHsl(color.r, color.g, color.b);
-                      setHue(hsl.h);
-                      setSaturation(hsl.s);
-                      setLightness(hsl.l);
-                      addToHistory(color);
-                    }}
-                    className="w-full h-12 rounded-lg border-2 border-white/20 hover:border-white/50 transition-colors"
-                    style={{ backgroundColor: `rgb(${color.r}, ${color.g}, ${color.b})` }}
-                    title={color.name}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Color History */}
-        {colorHistory.length > 0 && (
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Recent Colors</h3>
-            <div className="grid grid-cols-4 gap-2">
-              {colorHistory.slice(0, 16).map((color, index) => (
+        {/* Sidebar */}
+        <div className="w-80 bg-black/20 p-4 overflow-y-auto">
+          {/* Tesla Palettes */}
+          <div className="mb-6">
+            <h3 className="font-semibold mb-3">Tesla Palettes</h3>
+            <select
+              value={selectedPalette}
+              onChange={(e) => setSelectedPalette(e.target.value)}
+              className="w-full p-2 bg-white/10 rounded-lg text-white border border-white/20"
+            >
+              {Object.entries(teslaColorPalettes).map(([key, palette]) => (
+                <option key={key} value={key} className="bg-gray-800">
+                  {palette.name}
+                </option>
+              ))}
+            </select>
+            <div className="grid grid-cols-3 gap-2 mt-3">
+              {teslaColorPalettes[selectedPalette].colors.map((color, index) => (
                 <button
                   key={index}
+                  className="w-full h-12 rounded-lg border-2 border-white/20 hover:border-white/40 transition-colors"
+                  style={{ backgroundColor: color.hex }}
                   onClick={() => {
-                    setCurrentColor(color);
-                    const hsl = rgbToHsl(color.r, color.g, color.b);
-                    setHue(hsl.h);
-                    setSaturation(hsl.s);
-                    setLightness(hsl.l);
+                    setCurrentColor({ r: color.r, g: color.g, b: color.b });
+                    setColorHistory(prev => [{ r: color.r, g: color.g, b: color.b }, ...prev.slice(0, 9)]);
                   }}
-                  className="w-full h-12 rounded-lg border-2 border-white/20 hover:border-white/50 transition-colors"
-                  style={{ backgroundColor: `rgb(${color.r}, ${color.g}, ${color.b})` }}
+                  title={color.name}
                 />
               ))}
             </div>
           </div>
-        )}
+
+          {/* Color Harmonies */}
+          <div className="mb-6">
+            <h3 className="font-semibold mb-3">Color Harmonies</h3>
+            <div className="space-y-3">
+              {['complementary', 'triadic', 'analogous'].map((type) => (
+                <div key={type}>
+                  <div className="text-sm font-medium mb-2 capitalize">{type}</div>
+                  <div className="flex gap-1">
+                    {generateHarmony(type).map((color, index) => (
+                      <button
+                        key={index}
+                        className="w-8 h-8 rounded border border-white/20"
+                        style={{ backgroundColor: `rgb(${color.r}, ${color.g}, ${color.b})` }}
+                        onClick={() => setCurrentColor(color)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Saved Colors */}
+          {savedColors.length > 0 && (
+            <div className="mb-6">
+              <h3 className="font-semibold mb-3">Saved Colors</h3>
+              <div className="grid grid-cols-4 gap-2">
+                {savedColors.map((color, index) => (
+                  <button
+                    key={index}
+                    className="w-12 h-12 rounded-lg border-2 border-white/20 hover:border-white/40 transition-colors"
+                    style={{ backgroundColor: `rgb(${color.r}, ${color.g}, ${color.b})` }}
+                    onClick={() => setCurrentColor(color)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Recent Colors */}
+          {colorHistory.length > 0 && (
+            <div>
+              <h3 className="font-semibold mb-3">Recent Colors</h3>
+              <div className="grid grid-cols-4 gap-2">
+                {colorHistory.map((color, index) => (
+                  <button
+                    key={index}
+                    className="w-12 h-12 rounded-lg border-2 border-white/20 hover:border-white/40 transition-colors"
+                    style={{ backgroundColor: `rgb(${color.r}, ${color.g}, ${color.b})` }}
+                    onClick={() => setCurrentColor(color)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

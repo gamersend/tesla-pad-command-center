@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { RefreshCw, History, Settings } from 'lucide-react';
+import { RefreshCw, History, Settings, Shuffle, Play } from 'lucide-react';
 
 interface DiceResult {
   type: string;
@@ -19,6 +19,7 @@ const DiceRollerApp: React.FC = () => {
   const [selectedDice, setSelectedDice] = useState<DiceConfig>({ type: 'd6', count: 1, sides: 6 });
   const [isRolling, setIsRolling] = useState(false);
   const [rollHistory, setRollHistory] = useState<DiceResult[][]>([]);
+  const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
 
   const diceTypes = [
     { type: 'd4', sides: 4, name: 'D4' },
@@ -29,6 +30,26 @@ const DiceRollerApp: React.FC = () => {
     { type: 'd20', sides: 20, name: 'D20' },
     { type: 'd100', sides: 100, name: 'D100' }
   ];
+
+  const gamePresets = {
+    yahtzee: {
+      name: 'Yahtzee',
+      dice: { type: 'd6', count: 5, sides: 6 },
+      description: 'Roll 5 six-sided dice'
+    },
+    coin_flip: {
+      name: 'Coin Flip',
+      dice: { type: 'd2', count: 1, sides: 2 },
+      description: 'Heads or Tails',
+      labels: ['Heads', 'Tails']
+    },
+    decision_maker: {
+      name: 'Decision Maker',
+      dice: { type: 'd4', count: 1, sides: 4 },
+      description: 'Magic decision maker',
+      labels: ['Yes', 'No', 'Maybe', 'Ask Again']
+    }
+  };
 
   const rollDice = async () => {
     setIsRolling(true);
@@ -70,6 +91,20 @@ const DiceRollerApp: React.FC = () => {
     return Array.from({ length: 6 }, (_, i) => i + 1);
   };
 
+  const selectPreset = (presetKey: string) => {
+    const preset = gamePresets[presetKey];
+    setSelectedDice(preset.dice);
+    setSelectedPreset(presetKey);
+  };
+
+  const getDiceDisplay = (result: DiceResult, index: number) => {
+    const preset = selectedPreset ? gamePresets[selectedPreset] : null;
+    if (preset?.labels && preset.labels[result.value - 1]) {
+      return preset.labels[result.value - 1];
+    }
+    return result.value.toString();
+  };
+
   const total = currentRolls.reduce((sum, roll) => sum + roll.value, 0);
 
   return (
@@ -82,24 +117,62 @@ const DiceRollerApp: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center p-6">
+        {/* Game Presets */}
+        <div className="mb-6 w-full max-w-md">
+          <label className="block text-sm font-medium mb-3">Game Presets</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => {
+                setSelectedPreset(null);
+                setSelectedDice({ type: 'd6', count: 1, sides: 6 });
+              }}
+              className={`p-3 rounded-lg text-sm font-medium transition-colors ${
+                selectedPreset === null
+                  ? 'bg-white text-purple-600'
+                  : 'bg-white/20 hover:bg-white/30'
+              }`}
+            >
+              Custom
+            </button>
+            {Object.entries(gamePresets).map(([key, preset]) => (
+              <button
+                key={key}
+                onClick={() => selectPreset(key)}
+                className={`p-3 rounded-lg text-sm font-medium transition-colors ${
+                  selectedPreset === key
+                    ? 'bg-white text-purple-600'
+                    : 'bg-white/20 hover:bg-white/30'
+                }`}
+              >
+                {preset.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Dice Display */}
         <div className="mb-8">
           <div className="flex flex-wrap justify-center gap-4 mb-6">
             {currentRolls.map((roll, index) => (
               <div
                 key={index}
-                className={`w-20 h-20 bg-white rounded-xl flex items-center justify-center text-3xl font-bold text-purple-600 shadow-lg transition-transform duration-200 ${
+                className={`w-20 h-20 bg-white rounded-xl flex items-center justify-center text-2xl font-bold text-purple-600 shadow-lg transition-transform duration-200 ${
                   isRolling ? 'animate-bounce' : 'hover:scale-105'
                 }`}
               >
-                {isRolling ? '?' : roll.value}
+                {isRolling ? '?' : getDiceDisplay(roll, index)}
               </div>
             ))}
           </div>
           
           {currentRolls.length > 0 && !isRolling && (
             <div className="text-center">
-              <div className="text-4xl font-bold mb-2">Total: {total}</div>
+              <div className="text-4xl font-bold mb-2">
+                {selectedPreset === 'coin_flip' || selectedPreset === 'decision_maker' 
+                  ? getDiceDisplay(currentRolls[0], 0)
+                  : `Total: ${total}`
+                }
+              </div>
               <div className="text-white/70">
                 {currentRolls.length}×{selectedDice.type.toUpperCase()}
               </div>
@@ -108,57 +181,59 @@ const DiceRollerApp: React.FC = () => {
         </div>
 
         {/* Controls */}
-        <div className="w-full max-w-md space-y-6">
-          {/* Dice Type Selection */}
-          <div>
-            <label className="block text-sm font-medium mb-3">Dice Type</label>
-            <div className="grid grid-cols-4 gap-2">
-              {diceTypes.map((dice) => (
-                <button
-                  key={dice.type}
-                  onClick={() => setSelectedDice(prev => ({ ...prev, type: dice.type, sides: dice.sides }))}
-                  className={`p-3 rounded-lg text-sm font-medium transition-colors ${
-                    selectedDice.type === dice.type
-                      ? 'bg-white text-purple-600'
-                      : 'bg-white/20 hover:bg-white/30'
-                  }`}
-                >
-                  {dice.name}
-                </button>
-              ))}
+        {!selectedPreset && (
+          <div className="w-full max-w-md space-y-6">
+            {/* Dice Type Selection */}
+            <div>
+              <label className="block text-sm font-medium mb-3">Dice Type</label>
+              <div className="grid grid-cols-4 gap-2">
+                {diceTypes.map((dice) => (
+                  <button
+                    key={dice.type}
+                    onClick={() => setSelectedDice(prev => ({ ...prev, type: dice.type, sides: dice.sides }))}
+                    className={`p-3 rounded-lg text-sm font-medium transition-colors ${
+                      selectedDice.type === dice.type
+                        ? 'bg-white text-purple-600'
+                        : 'bg-white/20 hover:bg-white/30'
+                    }`}
+                  >
+                    {dice.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Dice Count */}
+            <div>
+              <label className="block text-sm font-medium mb-3">Number of Dice</label>
+              <div className="grid grid-cols-6 gap-2">
+                {getDiceCount().map((count) => (
+                  <button
+                    key={count}
+                    onClick={() => setSelectedDice(prev => ({ ...prev, count }))}
+                    className={`p-3 rounded-lg text-sm font-medium transition-colors ${
+                      selectedDice.count === count
+                        ? 'bg-white text-purple-600'
+                        : 'bg-white/20 hover:bg-white/30'
+                    }`}
+                  >
+                    {count}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
+        )}
 
-          {/* Dice Count */}
-          <div>
-            <label className="block text-sm font-medium mb-3">Number of Dice</label>
-            <div className="grid grid-cols-6 gap-2">
-              {getDiceCount().map((count) => (
-                <button
-                  key={count}
-                  onClick={() => setSelectedDice(prev => ({ ...prev, count }))}
-                  className={`p-3 rounded-lg text-sm font-medium transition-colors ${
-                    selectedDice.count === count
-                      ? 'bg-white text-purple-600'
-                      : 'bg-white/20 hover:bg-white/30'
-                  }`}
-                >
-                  {count}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Roll Button */}
-          <button
-            onClick={rollDice}
-            disabled={isRolling}
-            className="w-full bg-white text-purple-600 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-          >
-            <RefreshCw className={`w-5 h-5 ${isRolling ? 'animate-spin' : ''}`} />
-            {isRolling ? 'Rolling...' : 'Roll Dice'}
-          </button>
-        </div>
+        {/* Roll Button */}
+        <button
+          onClick={rollDice}
+          disabled={isRolling}
+          className="w-full max-w-md bg-white text-purple-600 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 mt-6"
+        >
+          <RefreshCw className={`w-5 h-5 ${isRolling ? 'animate-spin' : ''}`} />
+          {isRolling ? 'Rolling...' : 'Roll Dice'}
+        </button>
       </div>
 
       {/* History */}

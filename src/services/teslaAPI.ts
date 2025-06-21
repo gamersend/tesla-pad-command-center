@@ -348,69 +348,101 @@ class TeslaAPIManager {
 
   async getVehicleData(vehicleId: string, useCache: boolean = true): Promise<VehicleData> {
     if (useCache && this.vehicleCache.has(vehicleId)) {
-      const cached = this.vehicleCache.get(vehicleId)!;
-      if (Date.now() - cached.timestamp < 30000) {
+      const cached = this.vehicleCache.get(vehicleId);
+      if (cached && Date.now() - cached.timestamp < 30000) { // 30 second cache
         return cached.data;
       }
     }
-
+    
     try {
       if (!this.rateLimiter.canMakeRequest()) {
         throw new Error('Rate limit exceeded');
       }
-
-      if (!this.currentAPI) {
-        await this.initializeAPI();
-      }
-
+      
       const data = await this.currentAPI!.getVehicleData(vehicleId);
       this.cacheVehicleData(vehicleId, data);
       this.rateLimiter.recordRequest();
-
+      
       return data;
     } catch (error) {
       return await this.handleAPIError(error, 'getVehicleData', vehicleId, useCache);
     }
   }
-
+  
   async executeCommand(vehicleId: string, command: string, params: any = {}): Promise<CommandResponse> {
     try {
+      // Ensure vehicle is awake
       await this.ensureVehicleAwake(vehicleId);
-
+      
       if (!this.rateLimiter.canMakeRequest()) {
-        throw new Error('Rate limit exceeded');
+        // Queue command if rate limited
+        return await this.queueCommand(vehicleId, command, params);
       }
-
-      if (!this.currentAPI) {
-        await this.initializeAPI();
-      }
-
+      
       const result = await this.currentAPI!.executeCommand(vehicleId, command, params);
       this.rateLimiter.recordRequest();
-
-      console.log(`Tesla command executed: ${command}`, { vehicleId, params, result });
-
+      
+      // Log command execution
+      this.logCommandExecution(vehicleId, command, params, result);
+      
       return {
         success: true,
         result: result,
         executedAt: Date.now()
       };
-
-    } catch (error) {
-      const errorResult = await this.handleAPIError(error, 'executeCommand', vehicleId, command, params);
-      return errorResult as CommandResponse;
+      
+    } catch (error: any) {
+      return await this.handleAPIError(error, 'executeCommand', vehicleId, command, params);
     }
+  }
+
+  private cacheVehicleData(vehicleId: string, data: VehicleData): void {
+    this.vehicleCache.set(vehicleId, {
+      data,
+      timestamp: Date.now()
+    });
+  }
+
+  private async ensureVehicleAwake(vehicleId: string, maxRetries: number = 3): Promise<boolean> {
+    const vehicleData = await this.getVehicleData(vehicleId, false);
+    
+    if (vehicleData.state === 'online') {
+      return true;
+    }
+    
+    console.log('Vehicle is asleep, attempting to wake...');
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        await this.currentAPI!.wakeVehicle(vehicleId);
+        
+        // Poll for wake up (max 30 seconds)
+        for (let i = 0; i < 30; i++) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const updatedData = await this.getVehicleData(vehicleId, false);
+          
+          if (updatedData.state === 'online') {
+            return true;
+          }
+        }
+      } catch (error) {
+        console.warn(`Wake attempt ${attempt} failed:`, error);
+      }
+    }
+    
+    throw new Error('Failed to wake vehicle after multiple attempts');
   }
 
   private async handleAPIError(error: any, method: string, ...args: any[]): Promise<any> {
     console.error(`API Error in ${method}:`, error);
-
+    
+    // Try switching APIs if current one fails
     if (this.currentAPI === this.primaryAPI && this.fallbackAPI.isAvailable()) {
       console.log('Switching to fallback API');
       this.currentAPI = this.fallbackAPI;
-      this.rateLimiter.currentProvider = 'tesla_fleet';
-
+      
       try {
+        // Retry with fallback API
         switch (method) {
           case 'getVehicleData':
             return await this.getVehicleData(args[0], args[1]);
@@ -423,12 +455,35 @@ class TeslaAPIManager {
         console.error('Fallback API also failed:', fallbackError);
       }
     }
-
+    
+    // Return error response
     return {
       success: false,
       error: error.message,
       timestamp: Date.now()
     };
+  }
+
+  private async queueCommand(vehicleId: string, command: string, params: any): Promise<CommandResponse> {
+    // Simple queue implementation
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        try {
+          const result = await this.executeCommand(vehicleId, command, params);
+          resolve(result);
+        } catch (error: any) {
+          resolve({
+            success: false,
+            error: error.message,
+            timestamp: Date.now()
+          });
+        }
+      }, 5000); // Wait 5 seconds before retry
+    });
+  }
+
+  private logCommandExecution(vehicleId: string, command: string, params: any, result: any): void {
+    console.log(`Command executed: ${command}`, { vehicleId, params, result });
   }
 
   async getVehicles(): Promise<VehicleData[]> {

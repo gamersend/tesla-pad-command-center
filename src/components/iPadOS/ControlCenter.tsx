@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
-import { Wifi, Bluetooth, Battery, Volume2, Brightness, AirVent } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Wifi, Bluetooth, Sun, Volume2, AirplayIcon, Settings } from 'lucide-react';
+import { useSettings } from '@/hooks/useSettings';
 
 interface ControlCenterProps {
   isOpen: boolean;
@@ -8,89 +9,110 @@ interface ControlCenterProps {
 }
 
 export const ControlCenter: React.FC<ControlCenterProps> = ({ isOpen, onClose }) => {
-  const [brightness, setBrightness] = useState(70);
-  const [volume, setVolume] = useState(60);
+  const { settings, updateSetting } = useSettings();
 
-  const quickToggles = [
-    { icon: Wifi, label: 'Wi-Fi', active: true },
-    { icon: Bluetooth, label: 'Bluetooth', active: true },
-    { icon: AirVent, label: 'Climate', active: false },
-    { icon: Battery, label: 'Battery', active: true },
-  ];
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
 
   return (
-    <div className={`control-center ${isOpen ? 'open' : ''}`}>
-      <div className="control-content">
-        {/* Connectivity Section */}
-        <div className="control-tile">
-          <h3 className="text-body font-semibold text-white mb-4">Connectivity</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {quickToggles.map((toggle, index) => {
-              const Icon = toggle.icon;
-              return (
-                <button
-                  key={index}
-                  className={`p-4 rounded-xl transition-all touch-feedback ${
-                    toggle.active 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-white/20 text-white/70'
-                  }`}
+    <>
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-50"
+          onClick={handleBackdropClick}
+        >
+          <div className={`control-center ${isOpen ? 'open' : ''}`}>
+            <div className="control-content">
+              {/* Connectivity Section */}
+              <div className="control-tile">
+                <h3 className="text-white font-semibold mb-3">Connectivity</h3>
+                <div className="flex gap-3">
+                  <button className="flex-1 p-3 bg-blue-600 rounded-lg flex flex-col items-center">
+                    <Wifi className="w-6 h-6 text-white mb-1" />
+                    <span className="text-xs text-white">WiFi</span>
+                  </button>
+                  <button className="flex-1 p-3 bg-blue-600 rounded-lg flex flex-col items-center">
+                    <Bluetooth className="w-6 h-6 text-white mb-1" />
+                    <span className="text-xs text-white">Bluetooth</span>
+                  </button>
+                  <button className="flex-1 p-3 bg-gray-600 rounded-lg flex flex-col items-center">
+                    <AirplayIcon className="w-6 h-6 text-white mb-1" />
+                    <span className="text-xs text-white">AirPlay</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Brightness & Volume */}
+              <div className="control-tile">
+                <h3 className="text-white font-semibold mb-3">Display & Sound</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Sun className="w-5 h-5 text-white" />
+                    <div className="flex-1 h-2 bg-gray-600 rounded-full">
+                      <div className="h-full w-3/4 bg-white rounded-full"></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Volume2 className="w-5 h-5 text-white" />
+                    <div className="flex-1 h-2 bg-gray-600 rounded-full">
+                      <div className="h-full w-1/2 bg-white rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tesla Controls */}
+              <div className="control-tile">
+                <h3 className="text-white font-semibold mb-3">Tesla</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <button className="p-3 bg-red-600 rounded-lg text-white text-sm">
+                    Climate
+                  </button>
+                  <button className="p-3 bg-green-600 rounded-lg text-white text-sm">
+                    Charging
+                  </button>
+                  <button className="p-3 bg-blue-600 rounded-lg text-white text-sm">
+                    Controls
+                  </button>
+                  <button className="p-3 bg-gray-600 rounded-lg text-white text-sm">
+                    Sentry
+                  </button>
+                </div>
+              </div>
+
+              {/* Settings */}
+              <div className="control-tile">
+                <h3 className="text-white font-semibold mb-3">Quick Settings</h3>
+                <button 
+                  className="w-full p-3 bg-gray-600 rounded-lg flex items-center justify-center gap-2"
+                  onClick={() => {
+                    onClose();
+                    // You could navigate to settings here
+                  }}
                 >
-                  <Icon size={24} />
-                  <span className="block text-xs mt-2">{toggle.label}</span>
+                  <Settings className="w-5 h-5 text-white" />
+                  <span className="text-white">Settings</span>
                 </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Audio Controls */}
-        <div className="control-tile">
-          <h3 className="text-body font-semibold text-white mb-4">Audio & Display</h3>
-          
-          <div className="space-y-4">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Volume2 size={18} className="text-white" />
-                <span className="text-sm text-white">Volume</span>
-                <span className="text-sm text-white/70 ml-auto">{volume}%</span>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={volume}
-                onChange={(e) => setVolume(Number(e.target.value))}
-                className="w-full h-2 bg-white/20 rounded-lg appearance-none slider"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Brightness size={18} className="text-white" />
-                <span className="text-sm text-white">Brightness</span>
-                <span className="text-sm text-white/70 ml-auto">{brightness}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={brightness}
-                onChange={(e) => setBrightness(Number(e.target.value))}
-                className="w-full h-2 bg-white/20 rounded-lg appearance-none slider"
-              />
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Close button */}
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"
-      >
-        ×
-      </button>
-    </div>
+      )}
+    </>
   );
 };

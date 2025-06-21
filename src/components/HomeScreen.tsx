@@ -25,10 +25,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onOpenApp }) => {
     { id: 'music', name: 'Music', icon: '🎵', gradient: 'linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%)', category: 'productivity' },
 
     // Utility Apps
-    { id: 'search', name: 'Search', icon: '🔍', gradient: 'linear-gradient(135deg, #AF52DE 0%, #5856D6 100%)', category: 'utility' },
-    { id: 'color-picker', name: 'Colors', icon: '🎨', gradient: 'linear-gradient(135deg, #FF2D92 0%, #AF52DE 100%)', category: 'utility' },
-    { id: 'dice', name: 'Dice', icon: '🎲', gradient: 'linear-gradient(135deg, #5856D6 0%, #AF52DE 100%)', category: 'utility' },
-    { id: 'quotes', name: 'Quotes', icon: '💭', gradient: 'linear-gradient(135deg, #FF9500 0%, #FFCC00 100%)', category: 'utility' },
+    { id: 'search', name: 'Search Hub', icon: '🔍', gradient: 'linear-gradient(135deg, #AF52DE 0%, #5856D6 100%)', category: 'utility' },
+    { id: 'color-picker', name: 'Color Picker', icon: '🎨', gradient: 'linear-gradient(135deg, #FF2D92 0%, #AF52DE 100%)', category: 'utility' },
+    { id: 'dice', name: 'Dice Roller', icon: '🎲', gradient: 'linear-gradient(135deg, #5856D6 0%, #AF52DE 100%)', category: 'utility' },
+    { id: 'quotes', name: 'Quote Generator', icon: '💭', gradient: 'linear-gradient(135deg, #FF9500 0%, #FFCC00 100%)', category: 'utility' },
   ];
 
   return (
