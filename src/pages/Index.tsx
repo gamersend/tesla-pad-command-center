@@ -4,9 +4,18 @@ import { StatusBar } from '@/components/StatusBar';
 import HomeScreen from '@/components/HomeScreen';
 import Dock from '@/components/Dock';
 import { AppModal } from '@/components/AppModal';
+import { iPadFrame } from '@/components/iPadOS/iPadFrame';
+import { SwipeNavigation } from '@/components/iPadOS/SwipeNavigation';
+import { ControlCenter } from '@/components/iPadOS/ControlCenter';
+import { WallpaperEngine } from '@/components/iPadOS/WallpaperEngine';
+import { useWallpaper } from '@/hooks/useWallpaper';
+import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 
 const Index = () => {
   const [openApp, setOpenApp] = useState<string | null>(null);
+  const [showControlCenter, setShowControlCenter] = useState(false);
+  const { wallpaper } = useWallpaper();
+  const { currentPage, navigateToPage } = useSwipeNavigation(3);
 
   const handleOpenApp = (appId: string) => {
     setOpenApp(appId);
@@ -16,32 +25,66 @@ const Index = () => {
     setOpenApp(null);
   };
 
-  return (
-    <div className="h-screen w-screen overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative">
-      {/* Dynamic background with animated elements */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-40 h-40 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-20 left-40 w-36 h-36 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
-        <div className="absolute bottom-40 right-10 w-28 h-28 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-3000"></div>
+  const handleStatusBarSwipe = (e: React.TouchEvent) => {
+    const startY = e.touches[0].clientY;
+    if (startY < 50) { // Top of screen
+      setShowControlCenter(true);
+    }
+  };
+
+  // Create multiple home screen pages with different app layouts
+  const homeScreenPages = [
+    <HomeScreen key="page1" onOpenApp={handleOpenApp} />,
+    <div key="page2" className="ipados-home-screen">
+      <div className="col-span-full text-center text-white">
+        <h2 className="text-title mb-4">Widgets & Shortcuts</h2>
+        <p className="text-body opacity-70">Additional home screen content</p>
       </div>
-
-      {/* Status Bar */}
-      <StatusBar />
-
-      {/* Main Content Area */}
-      <div className="flex-1 relative z-10">
-        <HomeScreen onOpenApp={handleOpenApp} />
+    </div>,
+    <div key="page3" className="ipados-home-screen">
+      <div className="col-span-full text-center text-white">
+        <h2 className="text-title mb-4">App Library</h2>
+        <p className="text-body opacity-70">Organized app categories</p>
       </div>
-
-      {/* Dock */}
-      <Dock onOpenApp={handleOpenApp} />
-
-      {/* App Modal */}
-      {openApp && (
-        <AppModal appId={openApp} onClose={handleCloseApp} />
-      )}
     </div>
+  ];
+
+  return (
+    <iPadFrame>
+      <div className="relative w-full h-full hw-accelerated touch-optimized">
+        {/* Dynamic Wallpaper */}
+        <WallpaperEngine type={wallpaper.type} config={wallpaper} />
+
+        {/* Status Bar */}
+        <div onTouchStart={handleStatusBarSwipe}>
+          <StatusBar />
+        </div>
+
+        {/* Main Content with Swipe Navigation */}
+        <div className="flex-1 relative z-10">
+          <SwipeNavigation 
+            currentPage={currentPage} 
+            onPageChange={navigateToPage}
+          >
+            {homeScreenPages}
+          </SwipeNavigation>
+        </div>
+
+        {/* Dock */}
+        <Dock onOpenApp={handleOpenApp} />
+
+        {/* Control Center */}
+        <ControlCenter 
+          isOpen={showControlCenter} 
+          onClose={() => setShowControlCenter(false)} 
+        />
+
+        {/* App Modal */}
+        {openApp && (
+          <AppModal appId={openApp} onClose={handleCloseApp} />
+        )}
+      </div>
+    </iPadFrame>
   );
 };
 

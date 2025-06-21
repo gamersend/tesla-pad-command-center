@@ -1,4 +1,3 @@
-
 export interface VehicleData {
   id: string;
   display_name: string;
@@ -328,7 +327,6 @@ class TeslaAPIManager {
   }
 
   async initializeAPI(): Promise<void> {
-    // Try Tessie first
     try {
       await this.primaryAPI.authenticate();
       this.currentAPI = this.primaryAPI;
@@ -351,7 +349,7 @@ class TeslaAPIManager {
   async getVehicleData(vehicleId: string, useCache: boolean = true): Promise<VehicleData> {
     if (useCache && this.vehicleCache.has(vehicleId)) {
       const cached = this.vehicleCache.get(vehicleId)!;
-      if (Date.now() - cached.timestamp < 30000) { // 30 second cache
+      if (Date.now() - cached.timestamp < 30000) {
         return cached.data;
       }
     }
@@ -371,13 +369,12 @@ class TeslaAPIManager {
 
       return data;
     } catch (error) {
-      return await this.handleAPIError(error, 'getVehicleData', [vehicleId, useCache]);
+      return await this.handleAPIError(error, 'getVehicleData', vehicleId, useCache);
     }
   }
 
   async executeCommand(vehicleId: string, command: string, params: any = {}): Promise<CommandResponse> {
     try {
-      // Ensure vehicle is awake
       await this.ensureVehicleAwake(vehicleId);
 
       if (!this.rateLimiter.canMakeRequest()) {
@@ -400,69 +397,25 @@ class TeslaAPIManager {
       };
 
     } catch (error) {
-      const errorResult = await this.handleAPIError(error, 'executeCommand', [vehicleId, command, params]);
+      const errorResult = await this.handleAPIError(error, 'executeCommand', vehicleId, command, params);
       return errorResult as CommandResponse;
     }
   }
 
-  async ensureVehicleAwake(vehicleId: string, maxRetries: number = 3): Promise<boolean> {
-    const vehicleData = await this.getVehicleData(vehicleId, false);
-
-    if (vehicleData.state === 'online') {
-      return true;
-    }
-
-    console.log('Vehicle is asleep, attempting to wake...');
-
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        if (!this.currentAPI) {
-          await this.initializeAPI();
-        }
-
-        await this.currentAPI!.wakeVehicle(vehicleId);
-        this.rateLimiter.recordRequest('wake');
-
-        // Poll for wake up (max 30 seconds)
-        for (let i = 0; i < 30; i++) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          const updatedData = await this.getVehicleData(vehicleId, false);
-
-          if (updatedData.state === 'online') {
-            return true;
-          }
-        }
-      } catch (error) {
-        console.warn(`Wake attempt ${attempt} failed:`, error);
-      }
-    }
-
-    throw new Error('Failed to wake vehicle after multiple attempts');
-  }
-
-  private cacheVehicleData(vehicleId: string, data: VehicleData): void {
-    this.vehicleCache.set(vehicleId, {
-      data,
-      timestamp: Date.now()
-    });
-  }
-
-  private async handleAPIError(error: any, method: string, args: any[]): Promise<any> {
+  private async handleAPIError(error: any, method: string, ...args: any[]): Promise<any> {
     console.error(`API Error in ${method}:`, error);
 
-    // Try switching APIs if current one fails
     if (this.currentAPI === this.primaryAPI && this.fallbackAPI.isAvailable()) {
       console.log('Switching to fallback API');
       this.currentAPI = this.fallbackAPI;
       this.rateLimiter.currentProvider = 'tesla_fleet';
 
       try {
-        // Retry with fallback API
         switch (method) {
           case 'getVehicleData':
-            return await this.getVehicleData(...args);
+            return await this.getVehicleData(args[0], args[1]);
           case 'executeCommand':
-            return await this.executeCommand(...args);
+            return await this.executeCommand(args[0], args[1], args[2]);
           default:
             throw error;
         }
@@ -471,7 +424,6 @@ class TeslaAPIManager {
       }
     }
 
-    // Return error response
     return {
       success: false,
       error: error.message,

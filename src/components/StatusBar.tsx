@@ -1,77 +1,80 @@
 
-import React from 'react';
-import { UserMenu } from './UserMenu';
-import { useAuth } from '@/contexts/AuthContext';
-import { useSubscription } from '@/hooks/useSubscription';
-import { Badge } from '@/components/ui/badge';
+import React, { useState, useEffect } from 'react';
+import { Wifi, Battery, Signal } from 'lucide-react';
 
-export const StatusBar: React.FC = () => {
-  const { user } = useAuth();
-  const { subscription } = useSubscription();
+export const StatusBar = () => {
+  const [time, setTime] = useState(new Date());
+  const [batteryLevel, setBatteryLevel] = useState(85);
+  const [isCharging, setIsCharging] = useState(false);
 
-  const currentTime = new Date().toLocaleTimeString([], { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    hour12: false 
-  });
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
 
-  const currentDate = new Date().toLocaleDateString([], {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric'
-  });
+    // Tesla battery status simulation
+    const batteryTimer = setInterval(() => {
+      setBatteryLevel(prev => {
+        const newLevel = prev + (Math.random() - 0.5) * 2;
+        return Math.max(0, Math.min(100, newLevel));
+      });
+    }, 30000);
 
-  const getPlanColor = (planType: string) => {
-    switch (planType) {
-      case 'starter': return 'bg-blue-600';
-      case 'pro': return 'bg-purple-600';
-      case 'fleet': return 'bg-yellow-600';
-      default: return 'bg-gray-600';
+    // Check if Tesla is charging
+    if ('getBattery' in navigator) {
+      navigator.getBattery().then(battery => {
+        setIsCharging(battery.charging);
+        setBatteryLevel(Math.round(battery.level * 100));
+      });
     }
+
+    return () => {
+      clearInterval(timer);
+      clearInterval(batteryTimer);
+    };
+  }, []);
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: false
+    });
   };
 
   return (
-    <div className="flex items-center justify-between px-6 py-2 bg-black/40 backdrop-blur-md text-white text-sm border-b border-purple-500/30">
-      {/* Left side - Tesla Dashboard branding */}
-      <div className="flex items-center space-x-3">
-        <span className="text-lg">🚗</span>
-        <span className="font-semibold">Tesla Dashboard</span>
-        {subscription && (
-          <Badge className={`${getPlanColor(subscription.plan_type)} text-white text-xs`}>
-            {subscription.plan_type.toUpperCase()}
-          </Badge>
-        )}
+    <div className="ipados-status-bar">
+      {/* Left side - Time */}
+      <div className="status-left">
+        <span className="status-time font-mono">
+          {formatTime(time)}
+        </span>
       </div>
 
-      {/* Center - Current time and date */}
-      <div className="flex items-center space-x-4">
-        <span className="font-mono text-lg">{currentTime}</span>
-        <span className="text-purple-300">{currentDate}</span>
+      {/* Center - Tesla branding */}
+      <div className="flex items-center">
+        <span className="text-sm font-semibold text-red-500">TESLA</span>
       </div>
 
-      {/* Right side - System indicators and user menu */}
-      <div className="flex items-center space-x-4">
-        {/* Connection status */}
-        <div className="flex items-center space-x-1">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-xs text-green-400">Online</span>
+      {/* Right side - System indicators */}
+      <div className="status-right">
+        <div className="flex items-center gap-1">
+          <Signal className="status-icon" />
+          <span className="text-xs">5G</span>
         </div>
-
-        {/* Battery indicator (simulated) */}
-        <div className="flex items-center space-x-1">
-          <span className="text-xs">🔋</span>
-          <span className="text-xs text-green-400">85%</span>
+        
+        <Wifi className="status-icon" />
+        
+        <div className="flex items-center gap-1">
+          <Battery 
+            className={`status-icon ${isCharging ? 'text-green-400' : ''}`}
+            fill={batteryLevel > 20 ? 'currentColor' : 'none'}
+          />
+          <span className="text-xs">{batteryLevel}%</span>
         </div>
-
-        {/* Signal strength */}
-        <div className="flex items-center space-x-1">
-          <span className="text-xs">📶</span>
-          <span className="text-xs text-blue-400">LTE</span>
-        </div>
-
-        {/* User menu */}
-        {user && <UserMenu />}
       </div>
     </div>
   );
 };
+
+export default StatusBar;
