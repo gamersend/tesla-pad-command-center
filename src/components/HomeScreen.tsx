@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { AppIcon } from './AppIcon';
+import AppIcon from './AppIcon';
 
 interface HomeScreenProps {
   onOpenApp: (appId: string) => void;
