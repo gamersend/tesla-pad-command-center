@@ -3,25 +3,13 @@ import React, { useState } from 'react';
 import { StatusBar } from '@/components/StatusBar';
 import HomeScreen from '@/components/HomeScreen';
 import Dock from '@/components/Dock';
-import { AppModal } from '@/components/AppModal';
+import AppModal from '@/components/AppModal';
 import { SwipeNavigation } from '@/components/iPadOS/SwipeNavigation';
 import { ControlCenter } from '@/components/iPadOS/ControlCenter';
 import { WallpaperEngine } from '@/components/iPadOS/WallpaperEngine';
+import { iPadFrame } from '@/components/iPadOS/iPadFrame';
 import { useWallpaper } from '@/hooks/useWallpaper';
 import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
-
-const iPadFrame: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <div className="tesla-ipad-frame">
-      <div className="ipad-device-frame">
-        <div className="ipad-screen">
-          {children}
-        </div>
-        <div className="ipad-home-indicator"></div>
-      </div>
-    </div>
-  );
-};
 
 const Index = () => {
   const [openApp, setOpenApp] = useState<string | null>(null);

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { X } from 'lucide-react';
 import SafariApp from './apps/SafariApp';
@@ -23,6 +24,7 @@ import CryptoTrackerApp from './apps/CryptoTrackerApp';
 import AIAssistantApp from './apps/AIAssistantApp';
 import JSONToolsApp from './apps/JSONToolsApp';
 import StatsPanelApp from './apps/StatsPanelApp';
+import ListsApp from './apps/ListsApp';
 
 interface AppModalProps {
   appId: string;
@@ -57,6 +59,8 @@ const AppModal: React.FC<AppModalProps> = ({ appId, onClose }) => {
         return <TimerApp />;
       case 'music':
         return <MusicApp />;
+      case 'lists':
+        return <ListsApp />;
       
       // Utility Apps
       case 'search':

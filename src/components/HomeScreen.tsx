@@ -19,6 +19,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onOpenApp }) => {
     { id: 'calendar', name: 'Calendar', icon: '📅', gradient: 'linear-gradient(135deg, #fd79a8 0%, #e84393 100%)', category: 'productivity' },
     { id: 'mail', name: 'Mail', icon: '✉️', gradient: 'linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%)', category: 'productivity' },
     { id: 'notes', name: 'Notes', icon: '📝', gradient: 'linear-gradient(135deg, #fdcb6e 0%, #e17055 100%)', category: 'productivity' },
+    { id: 'lists', name: 'Lists & Reminders', icon: '✅', gradient: 'linear-gradient(135deg, #55efc4 0%, #00b894 100%)', category: 'productivity' },
     { id: 'weather', name: 'Weather', icon: '🌤️', gradient: 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)', category: 'productivity' },
     { id: 'maps', name: 'Maps', icon: '🗺️', gradient: 'linear-gradient(135deg, #00b894 0%, #00cec9 100%)', category: 'productivity' },
     { id: 'timer', name: 'Timer', icon: '⏰', gradient: 'linear-gradient(135deg, #FF9500 0%, #FF3B30 100%)', category: 'productivity' },

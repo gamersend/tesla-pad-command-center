@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 
 interface DashboardSettings {
@@ -6,6 +5,11 @@ interface DashboardSettings {
   theme: 'auto' | 'light' | 'dark' | 'tesla' | 'oled';
   fontSize: number;
   iconSize: number;
+  
+  // Background Settings
+  backgroundType: 'gradient' | 'image' | 'custom';
+  selectedBackground: string;
+  customBackground: string;
   
   // Layout
   layout: 'standard' | 'compact' | 'large' | 'list';
@@ -89,6 +93,11 @@ const defaultSettings: DashboardSettings = {
   theme: 'auto',
   fontSize: 16,
   iconSize: 76,
+  
+  // Background Settings
+  backgroundType: 'gradient',
+  selectedBackground: 'abstract-waves',
+  customBackground: '',
   
   // Layout
   layout: 'standard',
