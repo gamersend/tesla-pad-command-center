@@ -46,7 +46,7 @@ export const SwipeNavigation: React.FC<SwipeNavigationProps> = ({
   };
 
   const navigateToPage = (pageIndex: number) => {
-    if (isAnimating || pageIndex === activePage) return;
+    if (isAnimating || pageIndex === activePage || pageIndex < 0 || pageIndex >= totalPages) return;
 
     setIsAnimating(true);
     setActivePage(pageIndex);
@@ -65,11 +65,15 @@ export const SwipeNavigation: React.FC<SwipeNavigationProps> = ({
     }
   }, [activePage, isAnimating]);
 
+  useEffect(() => {
+    setActivePage(currentPage);
+  }, [currentPage]);
+
   return (
     <div className="relative w-full h-full overflow-hidden">
       <div
         ref={containerRef}
-        className="flex w-full h-full"
+        className="flex w-full h-full hw-accelerated"
         style={{ width: `${totalPages * 100}%` }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
@@ -83,15 +87,17 @@ export const SwipeNavigation: React.FC<SwipeNavigationProps> = ({
       </div>
 
       {/* Page Indicators */}
-      <div className="page-indicators">
-        {children.map((_, index) => (
-          <button
-            key={index}
-            className={`page-indicator ${index === activePage ? 'active' : ''}`}
-            onClick={() => navigateToPage(index)}
-          />
-        ))}
-      </div>
+      {totalPages > 1 && (
+        <div className="page-indicators">
+          {children.map((_, index) => (
+            <button
+              key={index}
+              className={`page-indicator ${index === activePage ? 'active' : ''}`}
+              onClick={() => navigateToPage(index)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -43,7 +43,7 @@ export const WallpaperEngine: React.FC<WallpaperEngineProps> = ({ type, config =
     canvas.height = window.innerHeight;
 
     const particles: Particle[] = [];
-    const particleCount = config.particleCount || 20; // Reduced for Tesla performance
+    const particleCount = config.particleCount || 20;
 
     for (let i = 0; i < particleCount; i++) {
       particles.push({
@@ -67,24 +67,20 @@ export const WallpaperEngine: React.FC<WallpaperEngineProps> = ({ type, config =
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     particlesRef.current.forEach(particle => {
-      // Update position
       particle.x += particle.vx;
       particle.y += particle.vy;
 
-      // Wrap around edges
       if (particle.x < 0) particle.x = canvas.width;
       if (particle.x > canvas.width) particle.x = 0;
       if (particle.y < 0) particle.y = canvas.height;
       if (particle.y > canvas.height) particle.y = 0;
 
-      // Draw particle
       ctx.beginPath();
       ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;
       ctx.fill();
     });
 
-    // Limit to 30fps for Tesla performance
     setTimeout(() => {
       animationFrameRef.current = requestAnimationFrame(animate);
     }, 33);
@@ -94,7 +90,6 @@ export const WallpaperEngine: React.FC<WallpaperEngineProps> = ({ type, config =
     animate();
   };
 
-  // Get background based on settings
   const getBackgroundStyle = () => {
     if (settings.backgroundType === 'custom' && settings.customBackground) {
       return {
@@ -127,8 +122,10 @@ export const WallpaperEngine: React.FC<WallpaperEngineProps> = ({ type, config =
       }
     }
     
-    // Default gradient
-    const gradientStyle = config.gradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    // Default gradient based on settings or fallback
+    const gradientStyle = settings.backgroundType === 'gradient' ? 
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' :
+      config.gradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
     return { background: gradientStyle };
   };
 

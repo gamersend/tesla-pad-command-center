@@ -7,30 +7,26 @@ interface DockProps {
 
 const Dock: React.FC<DockProps> = ({ onOpenApp }) => {
   const dockApps = [
-    { id: 'tesla-control', icon: '🚗', name: 'Tesla Control' },
-    { id: 'safari', icon: '🌐', name: 'Safari' },
-    { id: 'maps', icon: '🗺️', name: 'Maps' },
-    { id: 'music', icon: '🎵', name: 'Music' },
-    { id: 'search', icon: '🔍', name: 'Search' },
-    { id: 'notes', icon: '📝', name: 'Notes' },
+    { id: 'tesla-control', icon: '🚗', name: 'Tesla Control', gradient: 'from-red-500 to-red-600' },
+    { id: 'safari', icon: '🌐', name: 'Safari', gradient: 'from-blue-500 to-blue-600' },
+    { id: 'maps', icon: '🗺️', name: 'Maps', gradient: 'from-green-500 to-teal-600' },
+    { id: 'music', icon: '🎵', name: 'Music', gradient: 'from-purple-400 to-purple-600' },
+    { id: 'search', icon: '🔍', name: 'Search', gradient: 'from-purple-500 to-indigo-600' },
+    { id: 'notes', icon: '📝', name: 'Notes', gradient: 'from-yellow-400 to-orange-500' },
   ];
 
   return (
-    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
-      <div className="bg-black/30 backdrop-blur-xl rounded-3xl p-4 border border-white/20 shadow-2xl">
-        <div className="flex items-center space-x-4">
-          {dockApps.map((app) => (
-            <button
-              key={app.id}
-              onClick={() => onOpenApp(app.id)}
-              className="w-14 h-14 rounded-2xl bg-white/10 hover:bg-white/20 transition-all duration-200 flex items-center justify-center text-2xl hover:scale-110 border border-white/10 hover:border-white/30"
-              title={app.name}
-            >
-              {app.icon}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="ipados-dock">
+      {dockApps.map((app, index) => (
+        <button
+          key={app.id}
+          onClick={() => onOpenApp(app.id)}
+          className={`dock-icon bg-gradient-to-br ${app.gradient} hover:scale-110 transition-transform duration-200`}
+          title={app.name}
+        >
+          {app.icon}
+        </button>
+      ))}
     </div>
   );
 };
