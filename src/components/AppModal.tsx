@@ -12,6 +12,10 @@ import SearchHubApp from './apps/SearchHubApp';
 import ColorPickerApp from './apps/ColorPickerApp';
 import DiceRollerApp from './apps/DiceRollerApp';
 import QuoteGeneratorApp from './apps/QuoteGeneratorApp';
+import TeslaControlApp from './apps/TeslaControlApp';
+import TeslaStatusApp from './apps/TeslaStatusApp';
+import ChargingHubApp from './apps/ChargingHubApp';
+import ClimateProApp from './apps/ClimateProApp';
 
 interface AppModalProps {
   appId: string;
@@ -21,6 +25,17 @@ interface AppModalProps {
 export const AppModal: React.FC<AppModalProps> = ({ appId, onClose }) => {
   const renderApp = () => {
     switch (appId) {
+      // Tesla Apps
+      case 'tesla-control':
+        return <TeslaControlApp />;
+      case 'tesla-status':
+        return <TeslaStatusApp />;
+      case 'charging':
+        return <ChargingHubApp />;
+      case 'climate':
+        return <ClimateProApp />;
+      
+      // Productivity Apps
       case 'safari':
         return <SafariApp />;
       case 'calendar':
@@ -35,6 +50,8 @@ export const AppModal: React.FC<AppModalProps> = ({ appId, onClose }) => {
         return <TimerApp />;
       case 'music':
         return <MusicApp />;
+      
+      // Utility Apps
       case 'search':
         return <SearchHubApp />;
       case 'color-picker':
@@ -43,6 +60,7 @@ export const AppModal: React.FC<AppModalProps> = ({ appId, onClose }) => {
         return <DiceRollerApp />;
       case 'quotes':
         return <QuoteGeneratorApp />;
+      
       default:
         return (
           <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-900 to-gray-800 text-white">
