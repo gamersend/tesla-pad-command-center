@@ -1,11 +1,11 @@
 
 import React from 'react';
 
-interface iPadFrameProps {
+interface IPadFrameProps {
   children: React.ReactNode;
 }
 
-export const iPadFrame: React.FC<iPadFrameProps> = ({ children }) => {
+export const IPadFrame: React.FC<IPadFrameProps> = ({ children }) => {
   return (
     <div className="tesla-ipad-frame">
       <div className="ipad-device-frame">

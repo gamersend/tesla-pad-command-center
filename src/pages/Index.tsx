@@ -7,7 +7,7 @@ import AppModal from '@/components/AppModal';
 import { SwipeNavigation } from '@/components/iPadOS/SwipeNavigation';
 import { ControlCenter } from '@/components/iPadOS/ControlCenter';
 import { WallpaperEngine } from '@/components/iPadOS/WallpaperEngine';
-import { iPadFrame } from '@/components/iPadOS/iPadFrame';
+import { IPadFrame } from '@/components/iPadOS/iPadFrame';
 import { useWallpaper } from '@/hooks/useWallpaper';
 import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 
@@ -50,7 +50,7 @@ const Index = () => {
   ];
 
   return (
-    <iPadFrame>
+    <IPadFrame>
       <div className="relative w-full h-full hw-accelerated touch-optimized">
         {/* Dynamic Wallpaper */}
         <WallpaperEngine type={wallpaper.type} config={wallpaper} />
@@ -84,7 +84,7 @@ const Index = () => {
           <AppModal appId={openApp} onClose={handleCloseApp} />
         )}
       </div>
-    </iPadFrame>
+    </IPadFrame>
   );
 };
 
