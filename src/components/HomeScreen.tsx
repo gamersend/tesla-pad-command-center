@@ -34,9 +34,19 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onOpenApp }) => {
     { id: 'stats-panel', name: 'Stats Panel', icon: '📈', gradient: 'linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%)', category: 'utility' },
   ];
 
+  // Split apps into chunks of 20 for each screen page
+  const appsPerPage = 20;
+  const appPages = [];
+  for (let i = 0; i < apps.length; i += appsPerPage) {
+    appPages.push(apps.slice(i, i + appsPerPage));
+  }
+
+  // If we only have one page of apps, show them all
+  const currentPageApps = appPages.length === 1 ? apps : appPages[0] || [];
+
   return (
     <div className="ipados-home-screen">
-      {apps.slice(0, 30).map((app) => (
+      {currentPageApps.map((app) => (
         <div key={app.id} className="app-icon-container touch-feedback">
           <div 
             className="app-icon hw-accelerated"
