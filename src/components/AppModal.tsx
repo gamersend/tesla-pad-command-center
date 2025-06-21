@@ -21,6 +21,7 @@ import SettingsApp from './apps/SettingsApp';
 import CameraApp from './apps/CameraApp';
 import HomeAssistantApp from './apps/HomeAssistantApp';
 import CryptoTrackerApp from './apps/CryptoTrackerApp';
+import AIAssistantApp from './apps/AIAssistantApp';
 
 interface AppModalProps {
   appId: string;
@@ -77,6 +78,8 @@ export const AppModal: React.FC<AppModalProps> = ({ appId, onClose }) => {
         return <CameraApp />;
       case 'home-assistant':
         return <HomeAssistantApp />;
+      case 'ai-assistant':
+        return <AIAssistantApp />;
       
       default:
         return (
