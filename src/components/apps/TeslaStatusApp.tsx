@@ -1,191 +1,331 @@
 
-import React, { useState, useEffect } from 'react';
-import { Battery, Car, Shield, Thermometer, MapPin, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+  Car, 
+  Battery, 
+  Thermometer, 
+  MapPin, 
+  Clock, 
+  Zap,
+  Shield,
+  Settings,
+  Play,
+  Pause,
+  Trash2
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTeslaAPI } from '@/hooks/useTeslaAPI';
+import { useAutomation } from '@/hooks/useAutomation';
 
 const TeslaStatusApp: React.FC = () => {
-  const [vehicleData, setVehicleData] = useState({
-    battery_level: 85,
-    range: 287,
-    inside_temp: 72,
-    outside_temp: 68,
-    doors_open: false,
-    windows_open: false,
-    trunk_open: false,
-    frunk_open: false,
-    locked: true,
-    state: 'online',
-    location: 'Home • Parked',
-    lastUpdate: new Date()
-  });
+  const { vehicleData, loading, error, isConfigured } = useTeslaAPI();
+  const { rules, enableRule, disableRule, deleteRule } = useAutomation();
 
-  const [alerts, setAlerts] = useState([
-    {
-      type: 'info',
-      title: 'Climate Active',
-      message: 'Pre-conditioning started for departure at 8:30 AM',
-      action: 'View Settings'
-    }
-  ]);
+  if (!isConfigured) {
+    return (
+      <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white flex items-center justify-center p-8">
+        <div className="text-center max-w-md">
+          <Car size={64} className="mx-auto mb-4 text-gray-400" />
+          <h2 className="text-2xl font-bold mb-2">Tesla API Not Configured</h2>
+          <p className="text-gray-300 mb-4">
+            Configure your Tesla API settings to view vehicle status and automation.
+          </p>
+          <Button variant="outline" className="text-gray-400 border-gray-400 hover:bg-gray-400 hover:text-black">
+            <Settings className="w-4 h-4 mr-2" />
+            Open Settings
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    // Simulate data polling
-    const pollInterval = setInterval(() => {
-      setVehicleData(prev => ({
-        ...prev,
-        lastUpdate: new Date(),
-        // Simulate slight variations
-        battery_level: Math.max(10, prev.battery_level + (Math.random() - 0.5) * 0.5),
-        range: Math.max(20, prev.range + (Math.random() - 0.5) * 2)
-      }));
-    }, 15000);
-
-    return () => clearInterval(pollInterval);
-  }, []);
-
-  const getBatteryColor = (level: number) => {
-    if (level > 50) return 'from-green-500 to-green-600';
-    if (level > 20) return 'from-yellow-500 to-orange-500';
-    return 'from-red-500 to-red-600';
-  };
-
-  const formatLastUpdate = (date: Date) => {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
+  const formatLastSeen = (timestamp: number) => {
+    const diff = Date.now() - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
     
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    return `${Math.floor(diffMins / 60)}h ago`;
+    if (hours > 0) {
+      return `${hours}h ${minutes % 60}m ago`;
+    }
+    return `${minutes}m ago`;
   };
 
   return (
-    <div className="h-full bg-gradient-to-br from-gray-900 via-blue-900/20 to-purple-900/20 text-white overflow-y-auto">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-red-500/20 to-blue-500/20 p-6 border-b border-white/10">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center">
-              <Car className="mr-2 text-red-400" />
-              Model 3 Performance
-            </h1>
-            <p className="text-white/70">Vehicle Status Monitor</p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="text-green-400 font-semibold">{vehicleData.state}</span>
-          </div>
-        </div>
-      </div>
+    <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white overflow-y-auto">
+      <div className="p-6">
+        <Tabs defaultValue="status" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 bg-gray-800">
+            <TabsTrigger value="status" className="data-[state=active]:bg-gray-700">Vehicle Status</TabsTrigger>
+            <TabsTrigger value="automation" className="data-[state=active]:bg-gray-700">Automation</TabsTrigger>
+          </TabsList>
 
-      {/* Main Stats Grid */}
-      <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Battery Widget */}
-        <div className={`bg-gradient-to-br ${getBatteryColor(vehicleData.battery_level)} rounded-2xl p-6 relative overflow-hidden`}>
-          <Battery className="w-8 h-8 mb-3 opacity-80" />
-          <div className="text-4xl font-bold">{Math.round(vehicleData.battery_level)}%</div>
-          <div className="text-sm opacity-80 mb-2">{Math.round(vehicleData.range)} miles range</div>
-          <div className="absolute bottom-0 left-0 h-1 bg-white/30 w-full">
-            <div 
-              className="h-full bg-white/60 transition-all duration-1000"
-              style={{ width: `${vehicleData.battery_level}%` }}
-            ></div>
-          </div>
-        </div>
-
-        {/* Climate Widget */}
-        <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl p-6 border border-blue-400/30">
-          <Thermometer className="w-8 h-8 mb-3 text-blue-400" />
-          <div className="text-4xl font-bold">{vehicleData.inside_temp}°F</div>
-          <div className="text-sm opacity-80">Interior • {vehicleData.outside_temp}°F Outside</div>
-          <div className="mt-2 text-xs text-blue-300">Climate: Auto</div>
-        </div>
-
-        {/* Location Widget */}
-        <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl p-6 border border-purple-400/30">
-          <MapPin className="w-8 h-8 mb-3 text-purple-400" />
-          <div className="text-lg font-bold">{vehicleData.location}</div>
-          <div className="text-sm opacity-80">GPS Location</div>
-          <div className="mt-2 text-xs text-purple-300">Last update: {formatLastUpdate(vehicleData.lastUpdate)}</div>
-        </div>
-      </div>
-
-      {/* Vehicle Schematic */}
-      <div className="mx-6 mb-6">
-        <h3 className="text-xl font-bold mb-4 flex items-center">
-          <Shield className="mr-2 text-green-400" />
-          Vehicle Security Status
-        </h3>
-        
-        <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className={`w-16 h-16 rounded-full mx-auto mb-2 flex items-center justify-center ${vehicleData.locked ? 'bg-green-500/20 border-2 border-green-400' : 'bg-red-500/20 border-2 border-red-400'}`}>
-                🚗
+          <TabsContent value="status" className="space-y-6">
+            {loading && !vehicleData && (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-500 mx-auto mb-4"></div>
+                <p className="text-gray-400">Loading vehicle data...</p>
               </div>
-              <div className="text-sm font-semibold">{vehicleData.locked ? 'Locked' : 'Unlocked'}</div>
-              <div className="text-xs opacity-70">Doors</div>
-            </div>
+            )}
 
-            <div className="text-center">
-              <div className={`w-16 h-16 rounded-full mx-auto mb-2 flex items-center justify-center ${!vehicleData.windows_open ? 'bg-green-500/20 border-2 border-green-400' : 'bg-yellow-500/20 border-2 border-yellow-400'}`}>
-                🪟
-              </div>
-              <div className="text-sm font-semibold">{vehicleData.windows_open ? 'Vented' : 'Closed'}</div>
-              <div className="text-xs opacity-70">Windows</div>
-            </div>
+            {error && (
+              <Card className="bg-red-900/20 border-red-800">
+                <CardContent className="p-6 text-center">
+                  <p className="text-red-400">{error}</p>
+                </CardContent>
+              </Card>
+            )}
 
-            <div className="text-center">
-              <div className={`w-16 h-16 rounded-full mx-auto mb-2 flex items-center justify-center ${!vehicleData.trunk_open ? 'bg-green-500/20 border-2 border-green-400' : 'bg-red-500/20 border-2 border-red-400'}`}>
-                📦
-              </div>
-              <div className="text-sm font-semibold">{vehicleData.trunk_open ? 'Open' : 'Closed'}</div>
-              <div className="text-xs opacity-70">Trunk</div>
-            </div>
+            {vehicleData && (
+              <>
+                {/* Vehicle Overview */}
+                <Card className="bg-gray-800/50 border-gray-700">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-white">
+                      <Car className="w-5 h-5 mr-2" />
+                      {vehicleData.display_name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm text-gray-400">Status</div>
+                        <Badge className={`${
+                          vehicleData.state === 'online' ? 'bg-green-600' :
+                          vehicleData.state === 'asleep' ? 'bg-yellow-600' : 'bg-red-600'
+                        } text-white`}>
+                          {vehicleData.state.charAt(0).toUpperCase() + vehicleData.state.slice(1)}
+                        </Badge>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-400">Software</div>
+                        <div className="text-white">{vehicleData.vehicle_state?.car_version || 'Unknown'}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <div className="text-center">
-              <div className={`w-16 h-16 rounded-full mx-auto mb-2 flex items-center justify-center ${!vehicleData.frunk_open ? 'bg-green-500/20 border-2 border-green-400' : 'bg-red-500/20 border-2 border-red-400'}`}>
-                🎒
-              </div>
-              <div className="text-sm font-semibold">{vehicleData.frunk_open ? 'Open' : 'Closed'}</div>
-              <div className="text-xs opacity-70">Frunk</div>
-            </div>
-          </div>
-        </div>
-      </div>
+                {/* Battery & Range */}
+                <Card className="bg-gray-800/50 border-gray-700">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-white">
+                      <Battery className="w-5 h-5 mr-2 text-green-400" />
+                      Battery & Range
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-400">
+                          {vehicleData.charge_state?.battery_level || 0}%
+                        </div>
+                        <div className="text-sm text-gray-400">Battery Level</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-400">
+                          {Math.round(vehicleData.charge_state?.est_battery_range || 0)}
+                        </div>
+                        <div className="text-sm text-gray-400">Miles Range</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-purple-400">
+                          {vehicleData.charge_state?.charge_rate || 0}
+                        </div>
+                        <div className="text-sm text-gray-400">MPH Charging</div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Charging State</span>
+                        <Badge variant={vehicleData.charge_state?.charging_state === 'Charging' ? 'default' : 'secondary'}>
+                          {vehicleData.charge_state?.charging_state || 'Unknown'}
+                        </Badge>
+                      </div>
+                      {vehicleData.charge_state?.time_to_full_charge > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Time to Full</span>
+                          <span className="text-white">{vehicleData.charge_state.time_to_full_charge} hours</span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
 
-      {/* Alerts Section */}
-      {alerts.length > 0 && (
-        <div className="mx-6 mb-6">
-          <h3 className="text-xl font-bold mb-4 flex items-center">
-            <Clock className="mr-2 text-orange-400" />
-            Active Alerts
-          </h3>
-          
-          <div className="space-y-3">
-            {alerts.map((alert, index) => (
-              <div key={index} className={`bg-gradient-to-r rounded-xl p-4 border-l-4 ${
-                alert.type === 'critical' ? 'from-red-500/20 to-red-600/20 border-red-400' :
-                alert.type === 'warning' ? 'from-yellow-500/20 to-orange-500/20 border-yellow-400' :
-                'from-blue-500/20 to-cyan-500/20 border-blue-400'
-              }`}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-semibold">{alert.title}</div>
-                    <div className="text-sm opacity-80 mt-1">{alert.message}</div>
+                {/* Climate */}
+                <Card className="bg-gray-800/50 border-gray-700">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-white">
+                      <Thermometer className="w-5 h-5 mr-2 text-orange-400" />
+                      Climate
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-orange-400">
+                          {vehicleData.climate_state?.inside_temp ? Math.round(vehicleData.climate_state.inside_temp) : '--'}°C
+                        </div>
+                        <div className="text-sm text-gray-400">Interior</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-400">
+                          {vehicleData.climate_state?.outside_temp ? Math.round(vehicleData.climate_state.outside_temp) : '--'}°C
+                        </div>
+                        <div className="text-sm text-gray-400">Exterior</div>
+                      </div>
+                      <div className="text-center">
+                        <Badge className={`${vehicleData.climate_state?.is_climate_on ? 'bg-green-600' : 'bg-gray-600'} text-white`}>
+                          {vehicleData.climate_state?.is_climate_on ? 'On' : 'Off'}
+                        </Badge>
+                        <div className="text-sm text-gray-400 mt-1">Climate</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Security */}
+                <Card className="bg-gray-800/50 border-gray-700">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-white">
+                      <Shield className="w-5 h-5 mr-2 text-green-400" />
+                      Security
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Doors</span>
+                      <Badge className={`${vehicleData.vehicle_state?.locked ? 'bg-green-600' : 'bg-red-600'} text-white`}>
+                        {vehicleData.vehicle_state?.locked ? 'Locked' : 'Unlocked'}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Sentry Mode</span>
+                      <Badge className={`${vehicleData.vehicle_state?.sentry_mode ? 'bg-yellow-600' : 'bg-gray-600'} text-white`}>
+                        {vehicleData.vehicle_state?.sentry_mode ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Location & Odometer */}
+                <Card className="bg-gray-800/50 border-gray-700">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-white">
+                      <MapPin className="w-5 h-5 mr-2 text-blue-400" />
+                      Location & Mileage
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Odometer</span>
+                      <span className="text-white">
+                        {vehicleData.vehicle_state?.odometer ? Math.round(vehicleData.vehicle_state.odometer).toLocaleString() : '--'} miles
+                      </span>
+                    </div>
+                    {vehicleData.drive_state?.latitude && vehicleData.drive_state?.longitude && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Coordinates</span>
+                        <span className="text-white text-sm">
+                          {vehicleData.drive_state.latitude.toFixed(4)}, {vehicleData.drive_state.longitude.toFixed(4)}
+                        </span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="automation" className="space-y-6">
+            <Card className="bg-gray-800/50 border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center text-white">
+                  <Zap className="w-5 h-5 mr-2 text-yellow-400" />
+                  Automation Rules
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {rules.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Clock className="w-12 h-12 mx-auto mb-4 text-gray-500" />
+                    <p className="text-gray-400">No automation rules configured</p>
                   </div>
-                  <button className="px-3 py-1 bg-white/20 rounded-lg text-xs font-medium hover:bg-white/30 transition-colors">
-                    {alert.action}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+                ) : (
+                  rules.map((rule) => (
+                    <div key={rule.id} className="border border-gray-600 rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-white">{rule.name}</h3>
+                          <p className="text-sm text-gray-400">{rule.description}</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            checked={rule.enabled}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                enableRule(rule.id);
+                              } else {
+                                disableRule(rule.id);
+                              }
+                            }}
+                          />
+                          {rule.custom && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => deleteRule(rule.id)}
+                              className="text-red-400 border-red-400 hover:bg-red-400 hover:text-white"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="text-sm space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline" className="border-blue-400 text-blue-400">
+                            {rule.trigger.type}
+                          </Badge>
+                          {rule.custom && (
+                            <Badge variant="outline" className="border-purple-400 text-purple-400">
+                              Custom
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-gray-400">
+                          {rule.actions.length} action{rule.actions.length !== 1 ? 's' : ''} configured
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
 
-      {/* Data Refresh Info */}
-      <div className="p-6 text-center text-sm opacity-60">
-        <p>Data refreshes every 15 seconds • Last update: {formatLastUpdate(vehicleData.lastUpdate)}</p>
+            <Card className="bg-gray-800/50 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-white">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button variant="outline" className="border-green-400 text-green-400 hover:bg-green-400 hover:text-black">
+                    <Play className="w-4 h-4 mr-2" />
+                    Create Rule
+                  </Button>
+                  <Button variant="outline" className="border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-black">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Automation Settings
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
