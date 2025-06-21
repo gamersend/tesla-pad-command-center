@@ -19,6 +19,7 @@ import ClimateProApp from './apps/ClimateProApp';
 import NewsFeedApp from './apps/NewsFeedApp';
 import SettingsApp from './apps/SettingsApp';
 import CameraApp from './apps/CameraApp';
+import HomeAssistantApp from './apps/HomeAssistantApp';
 
 interface AppModalProps {
   appId: string;
@@ -71,6 +72,8 @@ export const AppModal: React.FC<AppModalProps> = ({ appId, onClose }) => {
         return <SettingsApp />;
       case 'camera':
         return <CameraApp />;
+      case 'home-assistant':
+        return <HomeAssistantApp />;
       
       default:
         return (
