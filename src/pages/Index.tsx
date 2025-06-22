@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { StatusBar } from '@/components/StatusBar';
 import Dock from '@/components/Dock';
@@ -6,7 +5,7 @@ import AppModal from '@/components/AppModal';
 import { SwipeNavigation } from '@/components/iPadOS/SwipeNavigation';
 import { ControlCenter } from '@/components/iPadOS/ControlCenter';
 import { WallpaperEngine } from '@/components/iPadOS/WallpaperEngine';
-import { IPadFrame } from '@/components/iPadOS/IPadFrame';
+import { IPadFrame } from '@/components/iPadOS/iPadFrame';
 import { useWallpaper } from '@/hooks/useWallpaper';
 import { useSwipeNavigation } from '@/hooks/useSwipeNavigation';
 import { useSettingsContext } from '@/contexts/SettingsContext';
